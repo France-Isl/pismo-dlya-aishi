@@ -14,6 +14,8 @@
   const LETTERS = Array.isArray(window.NUR_LETTERS) ? window.NUR_LETTERS : [];
   const FREE_COUNT = Number(CONFIG.freeLetterCount) || 10;
   const params = new URLSearchParams(location.search);
+  const BETA_PARAMETER = "beta";
+  const BETA_STORAGE_KEY = "nurBetaCapability";
 
   const UI = {
     ru: {
@@ -63,6 +65,9 @@
     replyIncoming:"Quel message avez-vous reçu ?",replyPlaceholder:"Collez le message auquel vous souhaitez répondre…",replyGoal:"Que souhaitez-vous répondre ? · facultatif",replyGoalPlaceholder:"Par exemple : je suis d’accord ; j’arriverai à 19 h ; je veux refuser poliment…",replyRelationshipLabel:"Qui vous a écrit ? · facultatif",replyToneLabel:"Quel ton employer ? · facultatif",replyHint:"L’assistant prépare une réponse respectueuse, sans contenu adulte, grossier ou ambigu. Si la question exige votre décision, ajoutez l’idée principale afin que l’IA ne l’invente pas.",replyGenerate:"Préparer une réponse",replyGenerating:"Je prépare une réponse sereine…",replyReady:"RÉPONSE PRÊTE",replyVariant:"↻ Une autre version",copyReply:"▣ Copier la réponse",replySafety:"Collez un message ordinaire sans contenu interdit.",replyShort:"Ajoutez le message reçu pour donner le contexte à l’assistant.",
     checkingPurchase:"Vérification de l’accès complet…",allLetters:"Débloquez tout GlowLetter",onePurchase:"Les 50 lettres, l’éditeur IA, l’assistant de réponse et les futures fonctions en un seul achat.",paywallBody:"Les 10 premières lettres restent gratuites. La collection, l’éditeur IA, l’assistant de réponse et les futures fonctions sont débloqués pour toujours.",benefit1:"les 50 lettres personnelles",benefit2:"lettres IA avec choix du style",benefit3:"assistant de réponse",benefit4:"restauration de l’achat",saveSettings:"Enregistrer les réglages",settingsSaved:"Réglages enregistrés"
   });
+  UI.ru.namesSettings = "Личное обращение";
+  UI.en.namesSettings = "Personal names";
+  UI.fr.namesSettings = "Personnalisation";
 
   const SELECT_OPTIONS = {
     relationship: {
@@ -297,8 +302,8 @@
 
   let lang = ["ru", "en", "fr"].includes(params.get("lang")) ? params.get("lang") : (localStorage.getItem("nurLanguage") || "ru");
   if (!UI[lang]) lang = "ru";
-  let fromName = cleanName(params.get("from"));
-  let toName = cleanName(params.get("to"));
+  let fromName = cleanName(params.has("from") ? params.get("from") : localStorage.getItem("nurFrom"));
+  let toName = cleanName(params.has("to") ? params.get("to") : localStorage.getItem("nurTo"));
   const initialNamesReady = Boolean(fromName && toName);
   let sharedMessage = initialNamesReady ? decodeSharedMessage(params.get("msg")) : "";
   let letterDeck = sharedMessage ? [{ id: "shared", category: "warm", shared: true, ru: sharedMessage, en: sharedMessage, fr: sharedMessage }, ...LETTERS] : [...LETTERS];
@@ -314,6 +319,7 @@
   let isMusicPlaying = false;
   let isNaturePlaying = false;
   let isPremium = false;
+  let betaAccess = false;
   let entitlementState = window.NurBilling?.getEntitlement ? "checking" : "free";
   let purchaseConfigured = null;
   let premiumPrice = CONFIG.defaultPrice || "7,99 €";
@@ -436,6 +442,48 @@
     return String(value || "").normalize("NFKC").replace(/[<>\n\r{}\[\]]/g, "").replace(/\s+/g, " ").trim().slice(0, 36);
   }
 
+  async function capabilityHash(value) {
+    if (!globalThis.crypto?.subtle) return "";
+    const bytes = new TextEncoder().encode(String(value || ""));
+    const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function initializeBetaAccess() {
+    const expectedHash = String(CONFIG.betaAccessHash || "").trim().toLowerCase();
+    const queryToken = String(params.get(BETA_PARAMETER) || "").trim();
+    const savedToken = String(localStorage.getItem(BETA_STORAGE_KEY) || "").trim();
+    const candidates = [...new Set([queryToken, savedToken].filter(Boolean))];
+    let acceptedToken = "";
+
+    if (/^[a-f0-9]{64}$/.test(expectedHash)) {
+      for (const token of candidates) {
+        if (!/^[A-Za-z0-9_-]{40,128}$/.test(token)) continue;
+        try {
+          if ((await capabilityHash(token)) === expectedHash) {
+            acceptedToken = token;
+            break;
+          }
+        } catch {}
+      }
+    }
+
+    if (acceptedToken) {
+      betaAccess = true;
+      isPremium = true;
+      entitlementState = "premium";
+      localStorage.setItem(BETA_STORAGE_KEY, acceptedToken);
+    } else if (savedToken) {
+      localStorage.removeItem(BETA_STORAGE_KEY);
+    }
+
+    if (queryToken) {
+      const url = new URL(location.href);
+      url.searchParams.delete(BETA_PARAMETER);
+      history.replaceState({}, "", url);
+    }
+  }
+
   function displayName(value) {
     return cleanName(value).replace(/\s*\([^)]*\)\s*/g, " ").trim() || cleanName(value);
   }
@@ -509,6 +557,7 @@
 
   function updateUrl(includeMessage = Boolean(sharedMessage)) {
     const url = new URL(location.href);
+    url.searchParams.delete(BETA_PARAMETER);
     if (fromName) url.searchParams.set("from", fromName); else url.searchParams.delete("from");
     if (toName) url.searchParams.set("to", toName); else url.searchParams.delete("to");
     if (lang === "ru") url.searchParams.delete("lang"); else url.searchParams.set("lang", lang);
@@ -530,6 +579,8 @@
     setText("#letterTo", toDisplay);
     if ($("#aiSenderName")) $("#aiSenderName").value = fromName;
     if ($("#aiRecipientName")) $("#aiRecipientName").value = toName;
+    if ($("#settingsSenderName")) $("#settingsSenderName").value = fromName;
+    if ($("#settingsRecipientName")) $("#settingsRecipientName").value = toName;
     if (fromName) localStorage.setItem("nurFrom", fromName); else localStorage.removeItem("nurFrom");
     if (toName) localStorage.setItem("nurTo", toName); else localStorage.removeItem("nurTo");
     applyLanguage(false);
@@ -614,6 +665,7 @@
     setText(".library-panel .panel-eyebrow", t("collectionEyebrow")); setText(".library-summary > span", t("collectionNote"));
     const categories = { all: t("all"), warm: t("warm"), gratitude: t("gratitude"), support: t("support"), family: t("family") }; $$("#categoryRow button").forEach(button => button.textContent = categories[button.dataset.category]);
     setText("#settingsTitle", t("settings")); setText(".settings-panel .panel-eyebrow", t("settingsEyebrow")); setText(".language-picker legend", t("langLabel")); setText("#customBackgroundButton", t("choosePhoto")); setText("#resetBackgroundButton", t("resetPhoto"));
+    setText(".profile-picker legend", t("namesSettings")); const settingsNameLabels = $$(".profile-picker .simple-form label > span"); if (settingsNameLabels[0]) settingsNameLabels[0].textContent = t("fromWho"); if (settingsNameLabels[1]) settingsNameLabels[1].textContent = t("forWho"); $("#settingsSenderName").placeholder = t("setupSenderPlaceholder"); $("#settingsRecipientName").placeholder = t("setupRecipientPlaceholder"); setText("#settingsNamesError", t("namesSafety"));
     setText("#rainToggle strong", t("rainTitle")); setText("#rainToggle small", t("rainNote")); setText("#natureToggle strong", t("natureTitle")); setText("#natureToggle small", t("natureNote")); setText("#weatherToggle strong", t("weatherTitle")); setText("#weatherToggle small", t("weatherNote")); setText("#fullscreenToggle strong", t("fullscreenTitle")); setText("#fullscreenToggle small", t("fullscreenNote"));
     setText("#rainToggle b", rainScene.enabled ? t("stateOn") : t("stateOff")); setText("#natureToggle b", isNaturePlaying ? t("stateOn") : t("stateOff")); if (!$("#weatherState").textContent.includes("°")) setText("#weatherState", weatherEnabled ? t("stateOn") : t("stateOff")); updateFullscreenControl(); setText("#saveSettingsButton", t("saveSettings"));
     setText(".background-picker legend", t("personalBg")); setText(".background-preview strong", t("ownPhoto")); setText(".background-preview small", t("localOnly")); setText(".track-picker legend", t("music")); setText("#customTrackButton strong", t("customMusic")); if (!customAudioBlob) setText("#customTrackName", t("customMusicNote"));
@@ -989,7 +1041,7 @@
       return;
     }
     const wasPremium = isPremium;
-    isPremium = owned === true || owned === "true";
+    isPremium = betaAccess || owned === true || owned === "true";
     entitlementState = isPremium ? "premium" : "free";
     if (price) premiumPrice = String(price);
     $$(".price-label").forEach(label => label.textContent = premiumPrice);
@@ -1023,6 +1075,10 @@
 
   async function requestNativeEntitlement() {
     try {
+      if (betaAccess) {
+        updatePremium(true, premiumPrice, "beta_capability");
+        return;
+      }
       if (!trustedEntitlementSource || !window.NurBilling?.getEntitlement) {
         entitlementState = "free";
         updatePurchaseConfiguration(Boolean(CONFIG.playStoreUrl || CONFIG.appStoreUrl));
@@ -1124,12 +1180,20 @@
 
   function toggleFavorite(){const entry=currentEntry();const key=String(entry.id);if(favorites.has(key))favorites.delete(key);else favorites.add(key);localStorage.setItem("nurFavorites",JSON.stringify([...favorites]));renderLetter();haptic();}
 
-  function shareLetter(){const entry=currentEntry();const url=new URL(location.href);url.searchParams.set("from",fromName);url.searchParams.set("to",toName);url.searchParams.set("lang",lang);url.searchParams.set("msg",encodeSharedMessage(entryText(entry)));url.searchParams.delete("quote");const data={title:t("title"),text:`${displayName(toName)}, ${t("shareText")} — ${displayName(fromName)} ♡`,url:url.toString()};if(navigator.share)navigator.share(data).catch(()=>{});else copyText(url.toString());}
+  function shareLetter(){const entry=currentEntry();const url=new URL(location.href);url.searchParams.delete(BETA_PARAMETER);url.searchParams.set("from",fromName);url.searchParams.set("to",toName);url.searchParams.set("lang",lang);url.searchParams.set("msg",encodeSharedMessage(entryText(entry)));url.searchParams.delete("quote");const data={title:t("title"),text:`${displayName(toName)}, ${t("shareText")} — ${displayName(fromName)} ♡`,url:url.toString()};if(navigator.share)navigator.share(data).catch(()=>{});else copyText(url.toString());}
 
   function updateFullscreenControl(){const active=Boolean(document.fullscreenElement);$("#fullscreenToggle")?.classList.toggle("is-active",active);const state=$("#fullscreenToggle b");if(state)state.textContent=active?t("stateOn"):t("stateOpen");}
   async function toggleFullscreen(){try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen?.();else await document.exitFullscreen?.();}catch{}updateFullscreenControl();}
   function restoreGesturePreferences(){if(gesturePreferencesRestored)return;gesturePreferencesRestored=true;if(localStorage.getItem("nurNature")==="on"&&!isNaturePlaying)setNaturePlaying(true,false);if(localStorage.getItem("nurFullscreen")==="on"&&!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{});}
-  function saveSettings(){localStorage.setItem("nurLanguage",lang);localStorage.setItem("nurRain",rainScene.enabled?"on":"off");localStorage.setItem("nurWeather",weatherEnabled?"on":"off");localStorage.setItem("nurTrack",String(selectedTrack));localStorage.setItem("nurNature",isNaturePlaying?"on":"off");localStorage.setItem("nurFullscreen",document.fullscreenElement?"on":"off");showToast(t("settingsSaved"));closePanel(layers.settings);}
+  function saveSettings(){
+    const sender = cleanName($("#settingsSenderName").value);
+    const recipient = cleanName($("#settingsRecipientName").value);
+    const namesInvalid = Boolean(sender || recipient) && (!sender || !recipient || containsForbidden(sender) || containsForbidden(recipient));
+    $("#settingsNamesError").hidden = !namesInvalid;
+    if (namesInvalid) return;
+    setNames(sender, recipient);
+    localStorage.setItem("nurLanguage",lang);localStorage.setItem("nurRain",rainScene.enabled?"on":"off");localStorage.setItem("nurWeather",weatherEnabled?"on":"off");localStorage.setItem("nurTrack",String(selectedTrack));localStorage.setItem("nurNature",isNaturePlaying?"on":"off");localStorage.setItem("nurFullscreen",document.fullscreenElement?"on":"off");showToast(t("settingsSaved"));closePanel(layers.settings);
+  }
 
   function bindEvents(){
     $("#openStoryButton").addEventListener("click",openStory);$("#homeButton").addEventListener("click",goHome);$$(".go-home").forEach(button=>button.addEventListener("click",goHome));
@@ -1138,7 +1202,7 @@
     [$("#aiOpenTop"),$("#aiOpenHome"),$("#aiOpenLetter")].forEach(button=>button.addEventListener("click",()=>requestPremiumFeature("letter")));$("#replyOpenHome").addEventListener("click",()=>requestPremiumFeature("reply"));$("#aiClose").addEventListener("click",()=>closePanel(layers.ai));$("#aiBackdrop").addEventListener("click",()=>closePanel(layers.ai));
     $$("[data-ai-mode]").forEach(button=>{button.addEventListener("click",()=>setAiMode(button.dataset.aiMode));button.addEventListener("keydown",event=>{if(!["ArrowLeft","ArrowRight"].includes(event.key))return;event.preventDefault();const next=button.dataset.aiMode==="letter"?$("#replyModeTab"):$("#letterModeTab");setAiMode(next.dataset.aiMode);next.focus();});});
     $("#libraryButton").addEventListener("click",()=>{pendingPremiumFeature="";renderLibrary();openPanel(layers.library);});$("#libraryClose").addEventListener("click",()=>closePanel(layers.library));$("#libraryBackdrop").addEventListener("click",()=>closePanel(layers.library));
-    $("#settingsButton").addEventListener("click",()=>{pendingPremiumFeature="";openPanel(layers.settings);});$("#settingsClose").addEventListener("click",()=>closePanel(layers.settings));$("#settingsBackdrop").addEventListener("click",()=>closePanel(layers.settings));$("#saveSettingsButton").addEventListener("click",saveSettings);
+    $("#settingsButton").addEventListener("click",()=>{pendingPremiumFeature="";$("#settingsSenderName").value=fromName;$("#settingsRecipientName").value=toName;$("#settingsNamesError").hidden=true;openPanel(layers.settings);});$("#settingsClose").addEventListener("click",()=>closePanel(layers.settings));$("#settingsBackdrop").addEventListener("click",()=>closePanel(layers.settings));$("#saveSettingsButton").addEventListener("click",saveSettings);
     $("#paywallClose").addEventListener("click",closePaywall);$("#paywallBackdrop").addEventListener("click",closePaywall);$("#purchaseButton").addEventListener("click",purchaseFullAccess);$("#settingsPurchase").addEventListener("click",purchaseFullAccess);$("#restoreButton").addEventListener("click",restorePurchase);
     $("#aiForm").addEventListener("submit",event=>{event.preventDefault();generateLetter();});$("#regenerateButton").addEventListener("click",generateLetter);$("#copyGenerated").addEventListener("click",()=>{const value=$("#generatedText").value;const sender=cleanName($("#aiSenderName").value)||fromName;const recipient=cleanName($("#aiRecipientName").value)||toName;const selected=LETTER_RELATIONSHIPS.has($("#aiRelationship").value)?$("#aiRelationship").value:"auto";const relationship=resolveRelationship(sender,recipient,selected);if(!value||containsForbidden(value)||containsImproperRomance(value,relationship))showSafety(t("safety"));else copyText(value);});$("#useGenerated").addEventListener("click",()=>usePersonalText($("#generatedText").value));
     $("#replyForm").addEventListener("submit",event=>{event.preventDefault();generateReply();});$("#regenerateReply").addEventListener("click",generateReply);$("#copyReply").addEventListener("click",()=>{const value=$("#replyGeneratedText").value;const relationship=REPLY_RELATIONSHIPS.has($("#replyRelationship").value)?$("#replyRelationship").value:"auto";if(!value||containsForbidden(value)||containsImproperRomance(value,relationship))showReplySafety(t("replySafety"));else copyText(value);});
@@ -1160,9 +1224,10 @@
   async function init(){
     if(LETTERS.length!==50)console.warn(`Expected 50 letters, received ${LETTERS.length}`);
     audio.volume=Number(localStorage.getItem("nurVolume")||.62);
+    await initializeBetaAccess();
     bindEvents();setNames(fromName,toName);applyLanguage();renderLibrary();requestNativeEntitlement();
     if("serviceWorker" in navigator&&location.protocol.startsWith("http")&&location.hostname!=="appassets.androidplatform.net"){
-      const registerServiceWorker=()=>navigator.serviceWorker.register("sw.js?v=7").catch(()=>{});
+      const registerServiceWorker=()=>navigator.serviceWorker.register("sw.js?v=8").catch(()=>{});
       if(document.readyState==="complete")registerServiceWorker();else addEventListener("load",registerServiceWorker,{once:true});
     }
     try{const savedAudio=await loadMedia("audio");if(savedAudio?.blob){customAudioBlob=savedAudio.blob;$("#customTrackName").textContent=savedAudio.name||"Custom audio";}else if(selectedTrack===3)selectedTrack=0;}catch{if(selectedTrack===3)selectedTrack=0;}

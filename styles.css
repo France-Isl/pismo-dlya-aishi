@@ -295,8 +295,9 @@ body.has-custom-background .chair-motion { display: none; }
 .atmosphere-card b { grid-column: 2; color: #ac92a0; font-size: 7px; }
 .atmosphere-card.is-active { border-color: #c77f9a; background: #fff0f4; }
 .atmosphere-card.is-active b { color: #a34f70; }
-.language-picker, .background-picker { margin: 18px 0 0; padding: 0; border: 0; }
-.language-picker legend, .background-picker legend { margin-bottom: 8px; color: #927281; font-size: 9px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.profile-picker, .language-picker, .background-picker { margin: 18px 0 0; padding: 0; border: 0; }
+.profile-picker legend, .language-picker legend, .background-picker legend { margin-bottom: 8px; color: #927281; font-size: 9px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.profile-picker .simple-form { gap: 9px; }
 .language-picker { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
 .language-picker legend { grid-column: 1/-1; }
 .language-picker button { display: grid; gap: 3px; min-height: 47px; border: 1px solid rgba(146,89,110,.16); border-radius: 13px; color: #815f6e; background: rgba(255,255,255,.52); font-size: 10px; font-weight: 800; }

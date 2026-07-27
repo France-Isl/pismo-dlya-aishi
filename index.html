@@ -12,12 +12,12 @@
   <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/campfire-lake.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <title>GlowLetter · Тёплые слова</title>
-  <link rel="manifest" href="manifest.webmanifest?v=7" />
+  <link rel="manifest" href="manifest.webmanifest?v=8" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=8" />
 </head>
 <body>
   <div class="app" id="app">
@@ -244,6 +244,15 @@
           <button class="atmosphere-card" id="fullscreenToggle" type="button"><i>⛶</i><span><strong>Полный экран</strong><small>без лишних элементов</small></span><b>ОТКРЫТЬ</b></button>
         </div>
 
+        <fieldset class="profile-picker">
+          <legend>Личное обращение</legend>
+          <div class="simple-form">
+            <label><span>От кого</span><input id="settingsSenderName" type="text" maxlength="36" autocomplete="name" placeholder="Ваше имя" /></label>
+            <label><span>Для кого</span><input id="settingsRecipientName" type="text" maxlength="36" autocomplete="off" placeholder="Имя получателя" /></label>
+          </div>
+          <p class="setup-error" id="settingsNamesError" hidden>Введите обычные имена или семейные роли.</p>
+        </fieldset>
+
         <fieldset class="language-picker">
           <legend>Язык приложения и писем</legend>
           <button class="is-active" type="button" data-lang="ru">RU <span>Русский</span></button>
@@ -303,8 +312,8 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <audio id="nasheed" loop preload="none"></audio>
   </div>
-  <script src="config.js?v=7"></script>
-  <script src="letters.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="config.js?v=8"></script>
+  <script src="letters.js?v=8"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>

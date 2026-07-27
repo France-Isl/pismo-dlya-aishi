@@ -1,18 +1,19 @@
-const CACHE = "glow-letter-v7";
+const CACHE = "glow-letter-v8";
 const CORE = [
   "./",
   "index.html",
-  "styles.css?v=7",
-  "config.js?v=7",
-  "letters.js?v=7",
-  "app.js?v=7",
-  "manifest.webmanifest?v=7",
+  "styles.css?v=8",
+  "config.js?v=8",
+  "letters.js?v=8",
+  "app.js?v=8",
+  "manifest.webmanifest?v=8",
   "icon.svg",
   "privacy.html",
   "assets/campfire-lake.png",
   "assets/campfire-mobile.png"
 ];
 const CORE_FILES = new Set(["", "index.html", "styles.css", "config.js", "letters.js", "app.js", "manifest.webmanifest"]);
+const SENSITIVE_NAVIGATION_PARAMS = ["beta", "access", "code", "error", "error_code", "error_description"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
@@ -39,6 +40,10 @@ self.addEventListener("fetch", event => {
   if (url.origin !== self.location.origin) return;
 
   if (event.request.mode === "navigate") {
+    if (SENSITIVE_NAVIGATION_PARAMS.some(parameter => url.searchParams.has(parameter))) {
+      event.respondWith(fetch(event.request).catch(() => caches.match("index.html", { ignoreSearch: true })));
+      return;
+    }
     event.respondWith(networkFirst(event.request, "index.html"));
     return;
   }
