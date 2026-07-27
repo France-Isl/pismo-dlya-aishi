@@ -64,7 +64,7 @@ struct WebViewContainer: UIViewRepresentable {
 
         static let billingBootstrap = """
         (function () {
-          const state = { entitled: false, priceLabel: '€4.99', reason: 'storekit2_not_configured', productId: 'full_access', freeLetterLimit: 10, mock: false };
+          const state = { entitled: false, priceLabel: '€4.99', reason: 'storekit2_not_configured', productId: 'full_access', freeLetterLimit: 10, purchaseConfigured: false, mock: false };
           window.NurBilling = Object.freeze({
             getEntitlement: function () { return JSON.stringify(state); },
             purchaseFullAccess: function () { window.webkit.messageHandlers.nurBilling.postMessage({ action: 'purchaseFullAccess' }); },
@@ -121,4 +121,3 @@ struct WebViewContainer: UIViewRepresentable {
         }
     }
 }
-

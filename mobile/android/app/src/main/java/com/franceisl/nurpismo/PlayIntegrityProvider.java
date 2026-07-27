@@ -30,6 +30,7 @@ final class PlayIntegrityProvider {
 
     private StandardIntegrityManager.StandardIntegrityTokenProvider tokenProvider;
     private boolean preparing;
+    private volatile boolean closed;
 
     PlayIntegrityProvider(Context context, long cloudProjectNumber) {
         this.manager = IntegrityManagerFactory.createStandard(context.getApplicationContext());
@@ -37,12 +38,19 @@ final class PlayIntegrityProvider {
     }
 
     void warmUp() {
-        if (cloudProjectNumber > 0) {
+        if (isConfigured()) {
             prepareIfNeeded();
         }
     }
 
+    synchronized boolean isConfigured() {
+        return !closed && cloudProjectNumber > 0;
+    }
+
     void requestToken(String requestHash, TokenCallback callback) {
+        if (closed) {
+            return;
+        }
         if (cloudProjectNumber <= 0) {
             callback.onResult(null, "play_integrity_cloud_project_not_configured");
             return;
@@ -50,6 +58,9 @@ final class PlayIntegrityProvider {
 
         StandardIntegrityManager.StandardIntegrityTokenProvider readyProvider;
         synchronized (this) {
+            if (closed) {
+                return;
+            }
             readyProvider = tokenProvider;
             if (readyProvider == null) {
                 pendingRequests.add(new PendingRequest(requestHash, callback));
@@ -64,7 +75,7 @@ final class PlayIntegrityProvider {
 
     private void prepareIfNeeded() {
         synchronized (this) {
-            if (preparing || tokenProvider != null || cloudProjectNumber <= 0) {
+            if (closed || preparing || tokenProvider != null || cloudProjectNumber <= 0) {
                 return;
             }
             preparing = true;
@@ -78,6 +89,10 @@ final class PlayIntegrityProvider {
                 .addOnSuccessListener(provider -> {
                     List<PendingRequest> pending;
                     synchronized (this) {
+                        if (closed) {
+                            pendingRequests.clear();
+                            return;
+                        }
                         tokenProvider = provider;
                         preparing = false;
                         pending = new ArrayList<>(pendingRequests);
@@ -90,6 +105,10 @@ final class PlayIntegrityProvider {
                 .addOnFailureListener(exception -> {
                     List<PendingRequest> pending;
                     synchronized (this) {
+                        if (closed) {
+                            pendingRequests.clear();
+                            return;
+                        }
                         preparing = false;
                         tokenProvider = null;
                         pending = new ArrayList<>(pendingRequests);
@@ -106,20 +125,42 @@ final class PlayIntegrityProvider {
             String requestHash,
             TokenCallback callback
     ) {
+        synchronized (this) {
+            if (closed) {
+                return;
+            }
+        }
         StandardIntegrityManager.StandardIntegrityTokenRequest request =
                 StandardIntegrityManager.StandardIntegrityTokenRequest.builder()
                         .setRequestHash(requestHash)
                         .build();
         provider.request(request)
-                .addOnSuccessListener(response -> callback.onResult(response.token(), null))
+                .addOnSuccessListener(response -> {
+                    synchronized (this) {
+                        if (closed) {
+                            return;
+                        }
+                    }
+                    callback.onResult(response.token(), null);
+                })
                 .addOnFailureListener(exception -> {
                     // A provider can expire or become invalid. Re-warm on the next attempt.
                     synchronized (this) {
+                        if (closed) {
+                            return;
+                        }
                         if (tokenProvider == provider) {
                             tokenProvider = null;
                         }
                     }
                     callback.onResult(null, "play_integrity_token_failed");
                 });
+    }
+
+    synchronized void close() {
+        closed = true;
+        preparing = false;
+        tokenProvider = null;
+        pendingRequests.clear();
     }
 }

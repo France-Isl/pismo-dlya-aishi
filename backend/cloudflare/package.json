@@ -2,10 +2,16 @@
   "name": "nurpismo-api",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
+    "check": "node --check src/index.js",
+    "test": "node --test test/*.test.mjs",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "tail": "wrangler tail"
+    "tail": "wrangler tail",
+    "db:create": "wrangler d1 create nurpismo-entitlements",
+    "db:migrate:local": "wrangler d1 migrations apply ENTITLEMENTS_DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply nurpismo-entitlements --remote"
   },
   "devDependencies": {
     "wrangler": "^4.26.0"

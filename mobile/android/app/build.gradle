@@ -27,6 +27,16 @@ def keystorePassword = valueOrEnvironment("NURPISMO_KEYSTORE_PASSWORD", "NURPISM
 def keyAliasValue = valueOrEnvironment("NURPISMO_KEY_ALIAS", "NURPISMO_KEY_ALIAS")
 def keyPasswordValue = valueOrEnvironment("NURPISMO_KEY_PASSWORD", "NURPISMO_KEY_PASSWORD")
 def hasReleaseSigning = [keystorePath, keystorePassword, keyAliasValue, keyPasswordValue].every { it != null && !it.isBlank() }
+def hasHttpsVerificationUrl = false
+try {
+    def verificationUri = new java.net.URI(verificationUrl.toString())
+    hasHttpsVerificationUrl = verificationUri.scheme?.equalsIgnoreCase("https")
+            && verificationUri.host != null
+            && !verificationUri.host.isBlank()
+} catch (Exception ignored) {
+    hasHttpsVerificationUrl = false
+}
+def hasProductionBillingSecurity = hasHttpsVerificationUrl && cloudProjectNumber > 0L
 
 android {
     namespace = "com.franceisl.nurpismo"
@@ -97,6 +107,16 @@ android {
     }
 }
 
+// An unsigned preview may intentionally demonstrate fail-closed behavior. A
+// signed artifact, however, could take real money, so never let it compile with
+// an unusable verification chain.
+if (hasReleaseSigning && !hasProductionBillingSecurity) {
+    throw new GradleException(
+            "Signed release requires an HTTPS purchaseVerificationUrl and a positive "
+                    + "playIntegrityCloudProjectNumber. Refusing to build a paid app that cannot unlock."
+    )
+}
+
 def webRoot = file("${projectDir}/../../..").canonicalFile
 def generatedWebAssets = layout.buildDirectory.dir("generated/web-assets")
 
@@ -141,4 +161,5 @@ dependencies {
     implementation "androidx.webkit:webkit:1.16.0"
     implementation "com.android.billingclient:billing:9.1.0"
     implementation "com.google.android.play:integrity:1.6.0"
+    testImplementation "junit:junit:4.13.2"
 }

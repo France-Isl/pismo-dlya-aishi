@@ -97,10 +97,19 @@ public final class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if (!request.isForMainFrame() || isTrustedAppUri(uri) || "about".equals(uri.getScheme())) {
+                // The JavaScript bridge is injected into every frame by the WebView
+                // API. The bundled app has no iframe use-case, so fail closed for
+                // every subframe navigation even if the page CSP is ever weakened.
+                if (!request.isForMainFrame()) {
+                    return true;
+                }
+                if (isTrustedAppDocumentUri(uri)) {
                     return false;
                 }
-                if ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) {
+                String scheme = uri != null ? uri.getScheme() : null;
+                if ("https".equalsIgnoreCase(scheme)
+                        || "http".equalsIgnoreCase(scheme)
+                        || "mailto".equalsIgnoreCase(scheme)) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     } catch (ActivityNotFoundException ignored) {
@@ -113,7 +122,9 @@ public final class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                billingManager.notifyWebState();
+                if (isTrustedAppDocumentUrl(url)) {
+                    billingManager.notifyWebState();
+                }
             }
         });
 
@@ -124,6 +135,10 @@ public final class MainActivity extends Activity {
                     ValueCallback<Uri[]> callback,
                     FileChooserParams fileChooserParams
             ) {
+                if (!isTrustedAppDocumentUrl(view.getUrl())) {
+                    callback.onReceiveValue(null);
+                    return false;
+                }
                 if (fileChooserCallback != null) {
                     fileChooserCallback.onReceiveValue(null);
                 }
@@ -176,6 +191,19 @@ public final class MainActivity extends Activity {
                 && APP_ORIGIN_HOST.equalsIgnoreCase(uri.getHost());
     }
 
+    private boolean isTrustedAppDocumentUri(Uri uri) {
+        if (!isTrustedAppUri(uri)) {
+            return false;
+        }
+        String path = uri.getPath();
+        return "/assets/web/index.html".equals(path)
+                || "/assets/web/privacy.html".equals(path);
+    }
+
+    private boolean isTrustedAppDocumentUrl(String url) {
+        return url != null && isTrustedAppDocumentUri(Uri.parse(url));
+    }
+
     private boolean hasLocationPermission() {
         return checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
@@ -204,19 +232,29 @@ public final class MainActivity extends Activity {
     }
 
     private void dispatchEntitlementToWeb(BillingManager.EntitlementState state) {
-        if (webView == null) {
+        WebView target = webView;
+        if (target == null) {
             return;
         }
         String price = JSONObject.quote(state.priceLabel);
         String reason = JSONObject.quote(state.reason);
+        boolean purchaseConfigured = billingManager != null
+                && billingManager.isPurchaseSecurityConfigured();
         String script = "(function(){"
-                + "var d={entitled:" + state.entitled + ",priceLabel:" + price + ",reason:" + reason + "};"
+                + "var d={entitled:" + state.entitled
+                + ",priceLabel:" + price
+                + ",reason:" + reason
+                + ",purchaseConfigured:" + purchaseConfigured + "};"
                 + "if(typeof window.onNativeEntitlement==='function'){"
                 + "window.onNativeEntitlement(d.entitled,d.priceLabel,d.reason);"
                 + "}"
                 + "window.dispatchEvent(new CustomEvent('nur-entitlement',{detail:d}));"
                 + "})();";
-        webView.post(() -> webView.evaluateJavascript(script, null));
+        target.post(() -> {
+            if (webView == target && isTrustedAppDocumentUrl(target.getUrl())) {
+                target.evaluateJavascript(script, null);
+            }
+        });
     }
 
     private void enterImmersiveMode() {

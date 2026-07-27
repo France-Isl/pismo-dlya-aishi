@@ -137,6 +137,7 @@
   let isMusicPlaying = false;
   let isNaturePlaying = false;
   let isPremium = false;
+  let purchaseConfigured = null;
   let premiumPrice = CONFIG.defaultPrice || "4,99 €";
   let generatedMessage = "";
   let composerVariant = 0;
@@ -298,6 +299,7 @@
     setText(".paywall-card > .panel-eyebrow", t("paywallEyebrow")); $("#paywallTitle").innerHTML = t("paywallTitle"); setText(".paywall-card > p", t("paywallBody")); const benefits=$$(".paywall-card li"); if(benefits[0])benefits[0].textContent=t("benefit1");if(benefits[1])benefits[1].textContent=t("benefit2");if(benefits[2])benefits[2].textContent=t("benefit3"); setText("#purchaseButton > span", t("payButton")); setText(".paywall-card > small", t("storeNote"));
     const legalLinks=$$(".legal-links a");if(legalLinks[0])legalLinks[0].textContent=t("privacy");if(legalLinks[1])legalLinks[1].textContent=t("supportLink");
     setText("#restoreButton", t("restore")); setText("#installButton", `＋ ${t("install")}`); $$(".price-label").forEach(label => label.textContent = premiumPrice);
+    updatePurchaseConfiguration(purchaseConfigured);
     localStorage.setItem("nurLanguage", lang);
     updateUrl();
     if (render) { if (storyOpened) renderLetter(); renderLibrary(); }
@@ -477,14 +479,26 @@
   }
 
   function updatePremium(owned, price, reason = "") {
+    const wasPremium = isPremium;
     isPremium = owned === true || owned === "true";
     if (price) premiumPrice = String(price);
     $$(".price-label").forEach(label => label.textContent = premiumPrice);
     $(".premium-settings-card").hidden = isPremium;
     setText("#accessLabel", isPremium ? t("allCount") : t("openCount"));
     renderLibrary();
-    if (isPremium) { closePanel(layers.paywall); showToast(t("premiumOn"), 3600); }
+    if (isPremium) { closePanel(layers.paywall); if (!wasPremium) showToast(t("premiumOn"), 3600); }
     else if (reason) console.info("Entitlement:", reason);
+  }
+
+  function updatePurchaseConfiguration(configured) {
+    if (typeof configured !== "boolean") return;
+    purchaseConfigured = configured;
+    [$("#purchaseButton"), $("#settingsPurchase"), $("#restoreButton")].forEach(button => {
+      if (!button) return;
+      button.classList.toggle("is-unavailable", !configured);
+      button.setAttribute("aria-disabled", String(!configured));
+      button.title = configured ? "" : t("purchaseUnavailable");
+    });
   }
 
   window.onNativeEntitlement = (owned, price, reason) => updatePremium(owned, price, reason);
@@ -494,17 +508,22 @@
       if (!window.NurBilling?.getEntitlement) return;
       const raw = await Promise.resolve(window.NurBilling.getEntitlement());
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
-      if (data) updatePremium(Boolean(data.entitled ?? data.owned ?? data.premium), data.priceLabel || data.price, data.reason);
+      if (data) {
+        updatePremium(Boolean(data.entitled ?? data.owned ?? data.premium), data.priceLabel || data.price, data.reason);
+        updatePurchaseConfiguration(data.purchaseConfigured);
+      }
     } catch (error) { console.info("Billing bridge not ready", error); }
   }
 
   function purchaseFullAccess() {
+    if (purchaseConfigured === false) { showToast(t("purchaseUnavailable"), 4300); return; }
     if (window.NurBilling?.purchaseFullAccess) { window.NurBilling.purchaseFullAccess(); return; }
     if (CONFIG.playStoreUrl) { window.open(CONFIG.playStoreUrl, "_blank", "noopener"); return; }
     showToast(t("purchaseUnavailable"), 4300);
   }
 
   function restorePurchase() {
+    if (purchaseConfigured === false) { showToast(t("purchaseUnavailable"), 3800); return; }
     if (window.NurBilling?.restorePurchases) { window.NurBilling.restorePurchases(); return; }
     showToast(t("purchaseUnavailable"), 3800);
   }
@@ -598,7 +617,7 @@
     $("#installButton").addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$("#installButton").hidden=true;});
     document.addEventListener("keydown",event=>{if(event.key==="Escape"){const open=Object.values(layers).reverse().find(layer=>layer.classList.contains("is-open"));if(open)closePanel(open);}if(storyOpened&&!Object.values(layers).some(layer=>layer.classList.contains("is-open"))){if(event.key==="ArrowRight")moveLetter(1);if(event.key==="ArrowLeft")moveLetter(-1);}});
     addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;$("#installButton").hidden=false;});
-    addEventListener("nur-entitlement",event=>{const data=event.detail||{};updatePremium(data.entitled??data.owned??false,data.priceLabel||data.price,data.reason);});
+    addEventListener("nur-entitlement",event=>{const data=event.detail||{};updatePremium(data.entitled??data.owned??false,data.priceLabel||data.price,data.reason);updatePurchaseConfiguration(data.purchaseConfigured);});
     addEventListener("pointermove",event=>{if(innerWidth<900||matchMedia("(prefers-reduced-motion: reduce)").matches)return;const x=(event.clientX/innerWidth-.5)*1.2;const y=(event.clientY/innerHeight-.5)*.8;$("#cinematicBg").style.translate=`${x}% ${y}%`;},{passive:true});
   }
 

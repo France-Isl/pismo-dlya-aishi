@@ -55,11 +55,14 @@ final class BillingManager implements PurchasesUpdatedListener {
     private final PurchaseVerifier verifier;
     private final PlayIntegrityProvider integrityProvider;
     private final SharedPreferences debugPreferences;
+    private final EntitlementCoordinator entitlementCoordinator = new EntitlementCoordinator();
     private final List<Runnable> readyActions = new ArrayList<>();
 
     private volatile EntitlementState state = new EntitlementState(false, DEFAULT_PRICE, "initializing", false);
     private boolean connecting;
     private boolean firstResume = true;
+    private boolean purchaseFlowInProgress;
+    private boolean closed;
 
     BillingManager(Activity activity, Listener listener) {
         this.activity = activity;
@@ -87,6 +90,10 @@ final class BillingManager implements PurchasesUpdatedListener {
                     mockOwned);
             return;
         }
+        if (!isPurchaseSecurityConfigured()) {
+            emit(false, DEFAULT_PRICE, "billing_security_not_configured", false);
+            return;
+        }
         integrityProvider.warmUp();
         ensureReady(() -> {
             queryProduct((details, offer, error) -> {
@@ -105,7 +112,10 @@ final class BillingManager implements PurchasesUpdatedListener {
             firstResume = false;
             return;
         }
-        if (!(BuildConfig.DEBUG && BuildConfig.ALLOW_DEBUG_MOCK_ENTITLEMENT)) {
+        if (!(BuildConfig.DEBUG && BuildConfig.ALLOW_DEBUG_MOCK_ENTITLEMENT)
+                && isPurchaseSecurityConfigured()
+                && !purchaseFlowInProgress
+                && !entitlementCoordinator.hasVerificationInFlight()) {
             ensureReady(() -> queryOwnedPurchases("resume_restore"));
         }
     }
@@ -116,11 +126,15 @@ final class BillingManager implements PurchasesUpdatedListener {
             emit(true, DEFAULT_PRICE, "debug_mock_only_no_payment", true);
             return;
         }
+        if (!isPurchaseSecurityConfigured()) {
+            emitTransient("billing_security_not_configured");
+            return;
+        }
 
-        emit(false, state.priceLabel, "opening_google_play", false);
+        emitTransient("opening_google_play");
         ensureReady(() -> queryProduct((details, offer, error) -> {
             if (details == null || offer == null) {
-                emit(false, state.priceLabel, error == null ? "product_unavailable" : error, false);
+                emitTransient(error == null ? "product_unavailable" : error);
                 return;
             }
 
@@ -134,9 +148,17 @@ final class BillingManager implements PurchasesUpdatedListener {
             BillingFlowParams flowParams = BillingFlowParams.newBuilder()
                     .setProductDetailsParamsList(Collections.singletonList(productParams.build()))
                     .build();
+            purchaseFlowInProgress = true;
             BillingResult result = billingClient.launchBillingFlow(activity, flowParams);
-            if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                emit(false, offer.getFormattedPrice(), "billing_launch_" + result.getResponseCode(), false);
+            int responseCode = result.getResponseCode();
+            if (responseCode == BillingClient.BillingResponseCode.OK) {
+                return;
+            }
+            purchaseFlowInProgress = false;
+            if (responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+                queryOwnedPurchases("launch_already_owned_restore");
+            } else {
+                emitTransient(offer.getFormattedPrice(), "billing_launch_" + responseCode);
             }
         }));
     }
@@ -149,23 +171,38 @@ final class BillingManager implements PurchasesUpdatedListener {
                     mockOwned);
             return;
         }
-        emit(false, state.priceLabel, "restoring_purchases", false);
+        if (!isPurchaseSecurityConfigured()) {
+            emitTransient("billing_security_not_configured");
+            return;
+        }
+        purchaseFlowInProgress = false;
+        emitTransient("restoring_purchases");
         ensureReady(() -> queryOwnedPurchases("manual_restore"));
     }
 
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
+        if (closed) {
+            return;
+        }
+        purchaseFlowInProgress = false;
         int code = billingResult.getResponseCode();
         if (code == BillingClient.BillingResponseCode.OK && purchases != null) {
-            processPurchases(purchases, "purchase_update");
+            long generation = entitlementCoordinator.beginOperation();
+            processPurchases(purchases, "purchase_update", generation);
+        } else if (code == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            queryOwnedPurchases("callback_already_owned_restore");
         } else if (code == BillingClient.BillingResponseCode.USER_CANCELED) {
-            emit(state.entitled, state.priceLabel, "purchase_canceled", state.mock);
+            emitTransient("purchase_canceled");
         } else {
-            emit(false, state.priceLabel, "purchase_update_" + code, false);
+            emitTransient("purchase_update_" + code);
         }
     }
 
     private void ensureReady(Runnable action) {
+        if (closed) {
+            return;
+        }
         if (billingClient.isReady()) {
             action.run();
             return;
@@ -178,11 +215,13 @@ final class BillingManager implements PurchasesUpdatedListener {
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(BillingResult billingResult) {
+                if (closed) {
+                    return;
+                }
                 connecting = false;
                 if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                     readyActions.clear();
-                    emit(false, state.priceLabel,
-                            "billing_unavailable_" + billingResult.getResponseCode(), false);
+                    emitTransient("billing_unavailable_" + billingResult.getResponseCode());
                     return;
                 }
                 List<Runnable> pending = new ArrayList<>(readyActions);
@@ -194,8 +233,11 @@ final class BillingManager implements PurchasesUpdatedListener {
 
             @Override
             public void onBillingServiceDisconnected() {
+                if (closed) {
+                    return;
+                }
                 connecting = false;
-                emit(false, state.priceLabel, "billing_disconnected", false);
+                emitTransient("billing_disconnected");
             }
         });
     }
@@ -211,6 +253,9 @@ final class BillingManager implements PurchasesUpdatedListener {
 
         billingClient.queryProductDetailsAsync(params,
                 (BillingResult billingResult, QueryProductDetailsResult result) -> {
+                    if (closed) {
+                        return;
+                    }
                     if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                         callback.onResult(null, null,
                                 "product_query_" + billingResult.getResponseCode());
@@ -232,19 +277,21 @@ final class BillingManager implements PurchasesUpdatedListener {
                     List<ProductDetails.OneTimePurchaseOfferDetails> offers =
                             details.getOneTimePurchaseOfferDetailsList();
                     if (offers != null && !offers.isEmpty()) {
-                        // Prefer a permanent buy option, never a rental.
+                        // A permanent entitlement must never fall back to a
+                        // rental offer, even if the Play catalog is misconfigured.
                         for (ProductDetails.OneTimePurchaseOfferDetails candidate : offers) {
                             if (candidate.getRentalDetails() == null) {
                                 offer = candidate;
                                 break;
                             }
                         }
-                        if (offer == null) {
-                            offer = offers.get(0);
-                        }
                     }
                     if (offer == null) {
-                        offer = details.getOneTimePurchaseOfferDetails();
+                        ProductDetails.OneTimePurchaseOfferDetails legacyOffer =
+                                details.getOneTimePurchaseOfferDetails();
+                        if (legacyOffer != null && legacyOffer.getRentalDetails() == null) {
+                            offer = legacyOffer;
+                        }
                     }
                     callback.onResult(details, offer,
                             offer == null ? "no_eligible_full_access_offer" : null);
@@ -252,20 +299,39 @@ final class BillingManager implements PurchasesUpdatedListener {
     }
 
     private void queryOwnedPurchases(String source) {
+        if (closed) {
+            return;
+        }
+        if (!isPurchaseSecurityConfigured()) {
+            emitTransient("billing_security_not_configured");
+            return;
+        }
+        if (purchaseFlowInProgress || entitlementCoordinator.hasVerificationInFlight()) {
+            return;
+        }
+        long generation = entitlementCoordinator.beginOperation();
+        if (generation < 0L) {
+            return;
+        }
         QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.INAPP)
                 .build();
         billingClient.queryPurchasesAsync(params, (billingResult, purchases) -> {
+            if (closed || !entitlementCoordinator.isCurrent(generation)) {
+                return;
+            }
             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                processPurchases(purchases, source);
+                processPurchases(purchases, source, generation);
             } else {
-                emit(false, state.priceLabel,
-                        "restore_failed_" + billingResult.getResponseCode(), false);
+                emitTransient("restore_failed_" + billingResult.getResponseCode());
             }
         });
     }
 
-    private void processPurchases(List<Purchase> purchases, String source) {
+    private void processPurchases(List<Purchase> purchases, String source, long generation) {
+        if (closed || !entitlementCoordinator.isCurrent(generation)) {
+            return;
+        }
         Purchase fullAccessPurchase = null;
         for (Purchase purchase : purchases) {
             if (purchase.getProducts().contains(BuildConfig.FULL_ACCESS_PRODUCT_ID)) {
@@ -274,34 +340,61 @@ final class BillingManager implements PurchasesUpdatedListener {
             }
         }
         if (fullAccessPurchase == null) {
+            entitlementCoordinator.invalidateVerification();
             emit(false, state.priceLabel, source + "_not_owned", false);
             return;
         }
         if (fullAccessPurchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
-            emit(false, state.priceLabel, "purchase_pending", false);
+            emitTransient("purchase_pending");
             return;
         }
         if (fullAccessPurchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED) {
+            entitlementCoordinator.invalidateVerification();
             emit(false, state.priceLabel, "purchase_not_completed", false);
             return;
         }
 
-        emit(false, state.priceLabel, "verifying_purchase", false);
+        String purchaseToken = fullAccessPurchase.getPurchaseToken();
+        EntitlementCoordinator.VerificationAction verificationAction =
+                entitlementCoordinator.beginVerification(purchaseToken, generation);
+        if (verificationAction == EntitlementCoordinator.VerificationAction.STALE) {
+            return;
+        }
+        emitTransient("verifying_purchase");
+        if (verificationAction == EntitlementCoordinator.VerificationAction.COALESCED) {
+            return;
+        }
         verifier.verify(fullAccessPurchase, result -> {
+            if (closed || !entitlementCoordinator.completeVerification(purchaseToken)) {
+                return;
+            }
             // Fail closed: both server verification and acknowledgement are required.
             if (result.verified && result.acknowledged && result.integrityVerified) {
                 emit(true, state.priceLabel, result.reason, false);
-            } else if (result.verified && result.acknowledged) {
-                emit(false, state.priceLabel, "server_did_not_verify_integrity", false);
-            } else if (result.verified) {
-                emit(false, state.priceLabel, "server_did_not_acknowledge", false);
-            } else {
+            } else if (result.authoritativeRejection) {
                 emit(false, state.priceLabel, result.reason, false);
+            } else if (result.verified && result.acknowledged) {
+                emitTransient("server_did_not_verify_integrity");
+            } else if (result.verified) {
+                emitTransient("server_did_not_acknowledge");
+            } else {
+                emitTransient(result.reason);
             }
         });
     }
 
+    private void emitTransient(String reason) {
+        emit(state.entitled, state.priceLabel, reason, state.mock);
+    }
+
+    private void emitTransient(String priceLabel, String reason) {
+        emit(state.entitled, priceLabel, reason, state.mock);
+    }
+
     private void emit(boolean entitled, String priceLabel, String reason, boolean mock) {
+        if (closed) {
+            return;
+        }
         EntitlementState next = new EntitlementState(
                 entitled,
                 priceLabel == null || priceLabel.isBlank() ? DEFAULT_PRICE : priceLabel,
@@ -309,7 +402,11 @@ final class BillingManager implements PurchasesUpdatedListener {
                 mock
         );
         state = next;
-        activity.runOnUiThread(() -> listener.onEntitlementChanged(next));
+        activity.runOnUiThread(() -> {
+            if (!closed && state == next) {
+                listener.onEntitlementChanged(next);
+            }
+        });
     }
 
     String getEntitlementJson() {
@@ -320,6 +417,7 @@ final class BillingManager implements PurchasesUpdatedListener {
                     .put("reason", state.reason)
                     .put("productId", BuildConfig.FULL_ACCESS_PRODUCT_ID)
                     .put("freeLetterLimit", BuildConfig.FREE_LETTER_LIMIT)
+                    .put("purchaseConfigured", isPurchaseSecurityConfigured())
                     .put("mock", state.mock)
                     .toString();
         } catch (Exception ignored) {
@@ -332,14 +430,29 @@ final class BillingManager implements PurchasesUpdatedListener {
     }
 
     void notifyWebState() {
-        listener.onEntitlementChanged(state);
+        if (!closed) {
+            listener.onEntitlementChanged(state);
+        }
     }
 
     void close() {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        purchaseFlowInProgress = false;
+        entitlementCoordinator.close();
         readyActions.clear();
         verifier.close();
         if (billingClient.isReady()) {
             billingClient.endConnection();
         }
+    }
+
+    boolean isPurchaseSecurityConfigured() {
+        if (BuildConfig.DEBUG && BuildConfig.ALLOW_DEBUG_MOCK_ENTITLEMENT) {
+            return true;
+        }
+        return verifier.isConfigured() && integrityProvider.isConfigured();
     }
 }

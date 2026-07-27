@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -34,17 +36,29 @@ final class PurchaseVerifier {
         final boolean verified;
         final boolean acknowledged;
         final boolean integrityVerified;
+        final boolean authoritativeRejection;
         final String reason;
 
-        Result(boolean verified, boolean acknowledged, boolean integrityVerified, String reason) {
+        Result(
+                boolean verified,
+                boolean acknowledged,
+                boolean integrityVerified,
+                boolean authoritativeRejection,
+                String reason
+        ) {
             this.verified = verified;
             this.acknowledged = acknowledged;
             this.integrityVerified = integrityVerified;
+            this.authoritativeRejection = authoritativeRejection;
             this.reason = reason;
         }
 
         static Result failure(String reason) {
-            return new Result(false, false, false, reason);
+            return new Result(false, false, false, false, reason);
+        }
+
+        static Result rejection(String reason) {
+            return new Result(false, false, false, true, reason);
         }
     }
 
@@ -52,6 +66,7 @@ final class PurchaseVerifier {
     private final PlayIntegrityProvider integrityProvider;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     PurchaseVerifier(String endpoint, PlayIntegrityProvider integrityProvider) {
         this.endpoint = endpoint == null ? "" : endpoint.trim();
@@ -68,6 +83,9 @@ final class PurchaseVerifier {
     }
 
     void verify(Purchase purchase, Callback callback) {
+        if (closed.get()) {
+            return;
+        }
         if (!isConfigured()) {
             callback.onResult(Result.failure("verification_backend_not_configured"));
             return;
@@ -82,23 +100,39 @@ final class PurchaseVerifier {
         }
 
         integrityProvider.requestToken(requestHash, (integrityToken, integrityError) -> {
+            if (closed.get()) {
+                return;
+            }
             if (integrityToken == null || integrityToken.isBlank()) {
                 callback.onResult(Result.failure(
                         integrityError == null ? "play_integrity_token_missing" : integrityError
                 ));
                 return;
             }
-            executor.execute(() -> {
-                Result result;
-                try {
-                    result = verifyBlocking(purchase, requestHash, integrityToken);
-                } catch (Exception ignored) {
-                    // Never log or expose purchaseToken or Integrity token in an exception.
-                    result = Result.failure("verification_network_error");
-                }
-                Result finalResult = result;
-                mainHandler.post(() -> callback.onResult(finalResult));
-            });
+            try {
+                executor.execute(() -> {
+                    if (closed.get()) {
+                        return;
+                    }
+                    Result result;
+                    try {
+                        result = verifyBlocking(purchase, requestHash, integrityToken);
+                    } catch (Exception ignored) {
+                        // Never log or expose purchaseToken or Integrity token in an exception.
+                        result = Result.failure("verification_network_error");
+                    }
+                    Result finalResult = result;
+                    if (!closed.get()) {
+                        mainHandler.post(() -> {
+                            if (!closed.get()) {
+                                callback.onResult(finalResult);
+                            }
+                        });
+                    }
+                });
+            } catch (RejectedExecutionException ignored) {
+                // Activity teardown won the race; no UI callback is valid now.
+            }
         });
     }
 
@@ -137,7 +171,10 @@ final class PurchaseVerifier {
         int status = connection.getResponseCode();
         if (status < 200 || status >= 300) {
             connection.disconnect();
-            return Result.failure("verification_rejected_" + status);
+            String reason = "verification_rejected_" + status;
+            return isAuthoritativeRejectionStatus(status)
+                    ? Result.rejection(reason)
+                    : Result.failure(reason);
         }
 
         String responseText;
@@ -156,12 +193,20 @@ final class PurchaseVerifier {
         String reason = response.optString("reason", valid ? "server_verified" : "server_rejected");
 
         if (!BuildConfig.FULL_ACCESS_PRODUCT_ID.equals(responseProduct)) {
-            return Result.failure("verification_product_mismatch");
+            return Result.rejection("verification_product_mismatch");
         }
         if (!requestHash.equals(responseRequestHash)) {
-            return Result.failure("verification_request_hash_mismatch");
+            return Result.rejection("verification_request_hash_mismatch");
         }
-        return new Result(valid, acknowledged, integrityVerified, reason);
+        return new Result(valid, acknowledged, integrityVerified, !valid, reason);
+    }
+
+    static boolean isAuthoritativeRejectionStatus(int status) {
+        return status == 400
+                || status == 403
+                || status == 404
+                || status == 410
+                || status == 422;
     }
 
     /**
@@ -197,6 +242,10 @@ final class PurchaseVerifier {
     }
 
     void close() {
-        executor.shutdownNow();
+        if (closed.compareAndSet(false, true)) {
+            integrityProvider.close();
+            mainHandler.removeCallbacksAndMessages(null);
+            executor.shutdownNow();
+        }
     }
 }

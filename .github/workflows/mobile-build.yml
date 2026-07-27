@@ -56,12 +56,12 @@ jobs:
         with:
           gradle-version: "9.4.1"
 
-      - name: Build debug APK and unsigned release AAB
+      - name: Test billing and build debug APK plus unsigned release AAB
         working-directory: mobile/android
         env:
           NURPISMO_VERIFICATION_URL: ${{ inputs.verification_url }}
           NURPISMO_CLOUD_PROJECT_NUMBER: ${{ inputs.cloud_project_number }}
-        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
+        run: gradle --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
 
       - name: Collect release files
         shell: bash

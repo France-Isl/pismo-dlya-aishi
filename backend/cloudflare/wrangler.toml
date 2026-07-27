@@ -11,3 +11,13 @@ ALLOWED_ORIGINS = "https://france-isl.github.io,https://appassets.androidplatfor
 NURPISMO_PACKAGE_NAME = "com.franceisl.nurpismo"
 NURPISMO_PRODUCT_ID = "full_access"
 REQUIRE_PLAY_INTEGRITY = "true"
+ENTITLEMENT_HASH_KEY_ID = "v1"
+
+# D1 is mandatory for the payment endpoint. Create it first, then uncomment
+# this block and replace the placeholder with the ID printed by Wrangler.
+# The endpoint deliberately returns 503 until this binding and migration exist.
+# [[d1_databases]]
+# binding = "ENTITLEMENTS_DB"
+# database_name = "nurpismo-entitlements"
+# database_id = "REPLACE_WITH_D1_DATABASE_ID"
+# migrations_dir = "migrations"
