@@ -1,7 +1,14 @@
-const CACHE = "warm-letter-v2";
-const ASSETS = ["./", "index.html", "styles.css", "app.js", "ai-worker.js", "manifest.webmanifest", "icon.svg", "assets/campfire-lake.png"];
-self.addEventListener("install", event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())));
-self.addEventListener("activate", event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
+const CACHE = "nur-letter-v3";
+const CORE = ["./", "index.html", "styles.css", "config.js", "letters.js", "app.js", "manifest.webmanifest", "icon.svg", "privacy.html", "assets/campfire-lake.png", "assets/campfire-mobile.png"];
+
+self.addEventListener("install", event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+});
+
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   if (event.request.mode === "navigate") {
@@ -13,9 +20,10 @@ self.addEventListener("fetch", event => {
     return;
   }
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-    const copy = response.clone();
-    caches.open(CACHE).then(cache => cache.put(event.request, copy));
+    if (response.ok && response.type === "basic") {
+      const copy = response.clone();
+      caches.open(CACHE).then(cache => cache.put(event.request, copy));
+    }
     return response;
-  }).catch(() => caches.match("index.html"))));
+  })));
 });
-

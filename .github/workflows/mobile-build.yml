@@ -1,0 +1,101 @@
+name: Mobile preview build
+
+on:
+  workflow_dispatch:
+    inputs:
+      verification_url:
+        description: "Optional HTTPS purchase-verification backend URL"
+        required: false
+        type: string
+      cloud_project_number:
+        description: "Optional Play Integrity Google Cloud project number"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-preview-release
+  cancel-in-progress: false
+
+jobs:
+  android-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check "Pillow==11.3.0"
+
+      - name: Generate launcher and store artwork
+        run: python outputs/aisha-letter/mobile/scripts/generate_store_assets.py
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android API 36.1
+        run: sdkmanager "platform-tools" "platforms;android-36.1" "build-tools;36.1.0"
+
+      - name: Set up Gradle 9.4
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.4.1"
+
+      - name: Build debug APK and unsigned release AAB
+        working-directory: outputs/aisha-letter/mobile/android
+        env:
+          NURPISMO_VERIFICATION_URL: ${{ inputs.verification_url }}
+          NURPISMO_CLOUD_PROJECT_NUMBER: ${{ inputs.cloud_project_number }}
+        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
+
+      - name: Collect release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p outputs/aisha-letter/mobile/dist
+          cp outputs/aisha-letter/mobile/android/app/build/outputs/apk/debug/app-debug.apk \
+            outputs/aisha-letter/mobile/dist/NurPismo-v1.0.0-preview-debug.apk
+          cp outputs/aisha-letter/mobile/android/app/build/outputs/bundle/release/app-release.aab \
+            outputs/aisha-letter/mobile/dist/NurPismo-v1.0.0-preview-unsigned.aab
+          cp outputs/aisha-letter/mobile/store-assets/nurpismo-play-icon-512.png \
+            outputs/aisha-letter/mobile/dist/NurPismo-play-icon-512.png
+          cp outputs/aisha-letter/mobile/store-assets/nurpismo-feature-1024x500.png \
+            outputs/aisha-letter/mobile/dist/NurPismo-feature-1024x500.png
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nurpismo-v1.0.0-preview
+          path: outputs/aisha-letter/mobile/dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create or update preview prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v1.0.0-preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          NOTES='Preview only. The APK is debug-signed for testing. The AAB is intentionally unsigned and cannot be submitted to production until Play App Signing/upload-key and the purchase-verification backend are configured.'
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "НурПисьмо v1.0.0 preview" --notes "$NOTES" --prerelease
+          else
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "НурПисьмо v1.0.0 preview" --notes "$NOTES" --prerelease
+          fi
+          gh release upload "$TAG" outputs/aisha-letter/mobile/dist/* --clobber

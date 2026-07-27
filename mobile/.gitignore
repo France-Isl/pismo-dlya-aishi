@@ -1,0 +1,11 @@
+android/.gradle/
+android/**/build/
+android/local.properties
+android/*.jks
+android/*.keystore
+ios/*.xcodeproj/
+ios/DerivedData/
+ios/NurPismo/WebResources/*
+!ios/NurPismo/WebResources/.gitkeep
+.DS_Store
+.pydeps/

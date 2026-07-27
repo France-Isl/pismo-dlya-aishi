@@ -1,0 +1,43 @@
+name: NurPismo
+options:
+  minimumXcodeGenVersion: 2.45.4
+  deploymentTarget:
+    iOS: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: 5.10
+    IPHONEOS_DEPLOYMENT_TARGET: 16.0
+    TARGETED_DEVICE_FAMILY: "1,2"
+
+targets:
+  NurPismo:
+    type: application
+    platform: iOS
+    sources:
+      - path: NurPismo
+        excludes:
+          - Assets.xcassets
+          - Info.plist
+          - WebResources
+    resources:
+      - path: NurPismo/Assets.xcassets
+      - path: NurPismo/WebResources
+        type: folder
+    preBuildScripts:
+      - name: Sync current web application
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+          /usr/bin/python3 "$SRCROOT/../scripts/sync_web_assets.py" \
+            --source "$SRCROOT/../.." \
+            --destination "$SRCROOT/NurPismo/WebResources"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.franceisl.nurpismo
+        PRODUCT_NAME: НурПисьмо
+        INFOPLIST_FILE: NurPismo/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGNING_ALLOWED: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        GENERATE_INFOPLIST_FILE: NO

@@ -1,0 +1,12 @@
+node_modules/
+.wrangler/
+.gradle/
+**/build/
+mobile/dist/
+mobile/ios/*.xcodeproj/
+*.jks
+*.keystore
+.env
+.env.*
+service-account*.json
+google-play*.json

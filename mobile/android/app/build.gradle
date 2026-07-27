@@ -1,0 +1,144 @@
+plugins {
+    id "com.android.application"
+}
+
+def valueOrEnvironment = { String propertyName, String environmentName ->
+    def propertyValue = providers.gradleProperty(propertyName).orNull
+    return propertyValue != null ? propertyValue : System.getenv(environmentName)
+}
+
+def quoteBuildConfig = { String value ->
+    def escaped = (value ?: "").replace("\\", "\\\\").replace("\"", "\\\"")
+    return "\"${escaped}\""
+}
+
+def verificationUrl = valueOrEnvironment("purchaseVerificationUrl", "NURPISMO_VERIFICATION_URL") ?: ""
+def mockBilling = providers.gradleProperty("enableBillingMock").orNull == "true"
+def cloudProjectNumberText = valueOrEnvironment("playIntegrityCloudProjectNumber", "NURPISMO_CLOUD_PROJECT_NUMBER") ?: "0"
+def cloudProjectNumber = 0L
+try {
+    cloudProjectNumber = Long.parseLong(cloudProjectNumberText.toString())
+} catch (NumberFormatException ignored) {
+    logger.warn("Invalid Play Integrity Cloud project number; release entitlement will fail closed.")
+}
+
+def keystorePath = valueOrEnvironment("NURPISMO_KEYSTORE_PATH", "NURPISMO_KEYSTORE_PATH")
+def keystorePassword = valueOrEnvironment("NURPISMO_KEYSTORE_PASSWORD", "NURPISMO_KEYSTORE_PASSWORD")
+def keyAliasValue = valueOrEnvironment("NURPISMO_KEY_ALIAS", "NURPISMO_KEY_ALIAS")
+def keyPasswordValue = valueOrEnvironment("NURPISMO_KEY_PASSWORD", "NURPISMO_KEY_PASSWORD")
+def hasReleaseSigning = [keystorePath, keystorePassword, keyAliasValue, keyPasswordValue].every { it != null && !it.isBlank() }
+
+android {
+    namespace = "com.franceisl.nurpismo"
+    compileSdk {
+        version = release(36) {
+            it.minorApiLevel = 1
+        }
+    }
+    buildToolsVersion = "36.1.0"
+
+    defaultConfig {
+        applicationId = "com.franceisl.nurpismo"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0-preview"
+
+        buildConfigField "String", "PURCHASE_VERIFICATION_URL", quoteBuildConfig(verificationUrl)
+        buildConfigField "String", "FULL_ACCESS_PRODUCT_ID", quoteBuildConfig("full_access")
+        buildConfigField "long", "PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER", "${cloudProjectNumber}L"
+        buildConfigField "int", "FREE_LETTER_LIMIT", "10"
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                keyAlias = keyAliasValue
+                keyPassword = keyPasswordValue
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            buildConfigField "boolean", "ALLOW_DEBUG_MOCK_ENTITLEMENT", mockBilling.toString()
+        }
+        release {
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            buildConfigField "boolean", "ALLOW_DEBUG_MOCK_ENTITLEMENT", "false"
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.release
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += ["META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*"]
+        }
+    }
+}
+
+def webRoot = file("${projectDir}/../../..").canonicalFile
+def generatedWebAssets = layout.buildDirectory.dir("generated/web-assets")
+
+def syncWebAssets = tasks.register("syncWebAssets", Sync) {
+    group = "build setup"
+    description = "Bundles the current web app into assets/web and decodes Base64 fallbacks."
+    from(webRoot) {
+        exclude "mobile/**", "backend/**", ".git/**", ".github/**"
+    }
+    into(generatedWebAssets.map { it.dir("web") })
+
+    doLast {
+        def bundledRoot = generatedWebAssets.get().dir("web").asFile
+        fileTree(bundledRoot).matching { include "**/*.b64" }.files.each { encodedFile ->
+            String relative = bundledRoot.toPath().relativize(encodedFile.toPath()).toString().replace('\\', '/')
+            String decodedRelative
+            if (relative.startsWith("audio/") && !relative.endsWith(".mp3.b64")) {
+                decodedRelative = relative.substring(0, relative.length() - ".b64".length()) + ".mp3"
+            } else {
+                decodedRelative = relative.substring(0, relative.length() - ".b64".length())
+            }
+            File decodedFile = new File(bundledRoot, decodedRelative)
+            if (!decodedFile.exists()) {
+                decodedFile.parentFile.mkdirs()
+                decodedFile.bytes = java.util.Base64.getMimeDecoder().decode(encodedFile.getText("US-ASCII"))
+            }
+            // The encoded file is only a source-control fallback. Shipping it
+            // beside the decoded media would substantially inflate APK/AAB.
+            if (!encodedFile.delete()) {
+                throw new GradleException("Could not remove bundled Base64 fallback: ${relative}")
+            }
+        }
+    }
+}
+
+// AGP 9 disallows Provider objects in the legacy SourceSet API. Resolve the
+// directory here and keep the explicit preBuild dependency below.
+android.sourceSets.main.assets.srcDir(generatedWebAssets.get().asFile)
+tasks.named("preBuild").configure { dependsOn(syncWebAssets) }
+
+dependencies {
+    implementation "androidx.webkit:webkit:1.16.0"
+    implementation "com.android.billingclient:billing:9.1.0"
+    implementation "com.google.android.play:integrity:1.6.0"
+}

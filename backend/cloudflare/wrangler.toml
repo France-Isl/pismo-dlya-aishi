@@ -1,0 +1,13 @@
+name = "nurpismo-api"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[vars]
+ALLOWED_ORIGINS = "https://france-isl.github.io,https://appassets.androidplatform.net"
+NURPISMO_PACKAGE_NAME = "com.franceisl.nurpismo"
+NURPISMO_PRODUCT_ID = "full_access"
+REQUIRE_PLAY_INTEGRITY = "true"

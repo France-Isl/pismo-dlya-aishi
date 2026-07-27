@@ -1,16 +1,22 @@
 {
-  "name": "Тёплое письмо",
-  "short_name": "Письмо",
-  "description": "Уютное письмо с безопасным локальным ИИ для семейных слов.",
+  "id": "./",
+  "name": "НурПисьмо: Тёплые слова",
+  "short_name": "НурПисьмо",
+  "description": "Атмосферные персональные письма и 50 тёплых текстов.",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
   "background_color": "#171722",
-  "theme_color": "#241d2a",
+  "theme_color": "#211a27",
+  "categories": ["lifestyle", "personalization", "entertainment"],
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Создать письмо", "short_name": "Создать", "url": "./?compose=1" },
+    { "name": "Коллекция", "short_name": "Письма", "url": "./?library=1" }
   ]
 }
-
