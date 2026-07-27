@@ -29,7 +29,7 @@ final class EntitlementCoordinator {
     }
 
     synchronized VerificationAction beginVerification(String purchaseToken, long candidateGeneration) {
-        if (!isCurrent(candidateGeneration) || purchaseToken == null || purchaseToken.isBlank()) {
+        if (!isCurrent(candidateGeneration) || purchaseToken == null || purchaseToken.trim().isEmpty()) {
             return VerificationAction.STALE;
         }
         if (purchaseToken.equals(inFlightToken)) {

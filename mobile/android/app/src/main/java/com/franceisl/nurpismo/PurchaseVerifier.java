@@ -76,7 +76,9 @@ final class PurchaseVerifier {
     boolean isConfigured() {
         try {
             URL url = new URL(endpoint);
-            return "https".equalsIgnoreCase(url.getProtocol()) && url.getHost() != null && !url.getHost().isBlank();
+            return "https".equalsIgnoreCase(url.getProtocol())
+                    && url.getHost() != null
+                    && !url.getHost().trim().isEmpty();
         } catch (Exception ignored) {
             return false;
         }
@@ -103,7 +105,7 @@ final class PurchaseVerifier {
             if (closed.get()) {
                 return;
             }
-            if (integrityToken == null || integrityToken.isBlank()) {
+            if (integrityToken == null || integrityToken.trim().isEmpty()) {
                 callback.onResult(Result.failure(
                         integrityError == null ? "play_integrity_token_missing" : integrityError
                 ));

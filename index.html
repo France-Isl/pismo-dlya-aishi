@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.open-meteo.com https://*.workers.dev; manifest-src 'self'; worker-src 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.open-meteo.com https://xzzngrquomyiglktroqi.supabase.co; manifest-src 'self'; worker-src 'self'" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#211a27" />
   <meta name="description" content="GlowLetter — атмосферные персональные письма, умный редактор и 50 тёплых текстов." />
@@ -12,12 +13,12 @@
   <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/campfire-lake.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <title>GlowLetter · Тёплые слова</title>
-  <link rel="manifest" href="manifest.webmanifest?v=8" />
+  <link rel="manifest" href="manifest.webmanifest?v=9" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 </head>
 <body>
   <div class="app" id="app">
@@ -237,6 +238,26 @@
           <div class="panel-header-actions"><button class="panel-home go-home" type="button">⌂ На главную</button><button class="panel-close" id="settingsClose" type="button" aria-label="Закрыть">×</button></div>
         </header>
 
+        <section class="account-card" id="accountCard" aria-labelledby="accountTitle">
+          <div class="account-heading">
+            <span class="account-mark" aria-hidden="true">◎</span>
+            <div><strong id="accountTitle">Аккаунт и синхронизация</strong><small id="accountStatus" role="status" aria-live="polite">Проверяю вход…</small></div>
+          </div>
+          <div class="account-guest" id="accountGuest">
+            <p id="accountGuestNote">Войдите, чтобы сохранять письма и настройки на ваших устройствах.</p>
+            <div class="account-actions">
+              <button class="oauth-button google" id="googleSignIn" type="button" hidden disabled><b aria-hidden="true">G</b><span>Продолжить с Google</span></button>
+              <button class="oauth-button facebook" id="facebookSignIn" type="button" hidden disabled><b aria-hidden="true">f</b><span>Продолжить с Facebook</span></button>
+            </div>
+          </div>
+          <div class="account-user" id="accountUser" hidden>
+            <span class="account-avatar" id="accountAvatar" aria-hidden="true">G</span>
+            <p><strong id="accountUserName">GlowLetter</strong><small id="accountUserEmail"></small></p>
+            <button id="accountSignOut" type="button">Выйти</button>
+          </div>
+          <p class="account-privacy" id="accountPrivacyNote">Фото, своя музыка, тексты из помощника и закрытый тестовый доступ остаются только на этом устройстве.</p>
+        </section>
+
         <div class="atmosphere-grid">
           <button class="atmosphere-card is-active" id="rainToggle" type="button"><i>☂</i><span><strong>Живой дождь</strong><small>крупные капли и брызги</small></span><b>ВКЛ</b></button>
           <button class="atmosphere-card" id="natureToggle" type="button"><i>♬</i><span><strong>Ночной лес</strong><small>сверчки, ветер и лягушки</small></span><b>ВЫКЛ</b></button>
@@ -312,8 +333,9 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <audio id="nasheed" loop preload="none"></audio>
   </div>
-  <script src="config.js?v=8"></script>
-  <script src="letters.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="config.js?v=9"></script>
+  <script src="vendor/supabase-2.110.9.js?v=9"></script>
+  <script src="letters.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

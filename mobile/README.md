@@ -34,6 +34,16 @@ window.onNativeEntitlement = (entitled, priceLabel, reason) => {
 };
 ```
 
+Для OAuth локальная страница также получает минимальный мост без токенов:
+
+```js
+window.NurAuth.getRedirectUrl();       // com.franceisl.nurpismo://auth/callback
+window.NurAuth.openAuthorizeUrl(url);  // только строгий Supabase PKCE authorize URL
+window.onNativeAuthCallback = url => { /* передать URL Supabase JS */ };
+```
+
+Android и iOS принимают только Google/Facebook authorize URL точного проекта Supabase, точный native callback и PKCE S256. Коды не записываются в Intent или постоянное хранилище. Custom URL scheme защищён PKCE от кражи токена, но другое приложение теоретически может перехватить сам callback и вызвать отказ во входе; перед production-релизом предпочтительно перейти на verified Android App Link и iOS Universal Link.
+
 Приложение также отправляет событие `nur-entitlement` с теми же данными в `event.detail`. Нативный мост не отдаёт JavaScript-слою purchase token.
 
 Важно: ограничение «первые 10 писем бесплатно» должно считать реально открытые/созданные письма в `app.js` и после десятого показывать кнопку покупки. Нативная часть сообщает лимит и проверенное право, но не знает бизнес-событий веб-интерфейса.

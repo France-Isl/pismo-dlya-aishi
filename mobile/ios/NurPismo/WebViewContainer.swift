@@ -1,3 +1,4 @@
+import AuthenticationServices
 import SwiftUI
 import WebKit
 
@@ -9,8 +10,14 @@ struct WebViewContainer: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         let controller = WKUserContentController()
         controller.add(context.coordinator, name: "nurBilling")
+        controller.add(context.coordinator, name: "nurAuth")
         controller.addUserScript(WKUserScript(
             source: Coordinator.billingBootstrap,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        ))
+        controller.addUserScript(WKUserScript(
+            source: Coordinator.authBootstrap,
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         ))
@@ -55,12 +62,21 @@ struct WebViewContainer: UIViewRepresentable {
 
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         uiView.configuration.userContentController.removeScriptMessageHandler(forName: "nurBilling")
+        uiView.configuration.userContentController.removeScriptMessageHandler(forName: "nurAuth")
         uiView.stopLoading()
+        coordinator.cancelAuthentication()
         coordinator.webView = nil
     }
 
-    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
+    final class Coordinator: NSObject,
+                             WKNavigationDelegate,
+                             WKUIDelegate,
+                             WKScriptMessageHandler,
+                             ASWebAuthenticationPresentationContextProviding {
         weak var webView: WKWebView?
+        private var authSession: ASWebAuthenticationSession?
+        private var trustedMainDocumentReady = false
+        private var pendingAuthCallbackURL: URL?
 
         static let billingBootstrap = """
         (function () {
@@ -73,8 +89,26 @@ struct WebViewContainer: UIViewRepresentable {
         })();
         """
 
+        static let authBootstrap = """
+        (function () {
+          const bridge = Object.freeze({
+            getRedirectUrl: function () { return '\(OAuthURLPolicy.callbackURLString)'; },
+            openAuthorizeUrl: function (url) {
+              window.webkit.messageHandlers.nurAuth.postMessage({ action: 'openAuthorizeUrl', url: String(url) });
+            }
+          });
+          Object.defineProperty(window, 'NurAuth', { value: bridge, configurable: false, writable: false });
+        })();
+        """
+
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            trustedMainDocumentReady = false
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            trustedMainDocumentReady = isTrustedMainDocumentURL(webView.url)
             sendUnavailable(reason: "storekit2_not_configured")
+            dispatchPendingAuthCallback()
         }
 
         func webView(
@@ -94,17 +128,107 @@ struct WebViewContainer: UIViewRepresentable {
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            guard message.name == "nurBilling",
+            guard message.frameInfo.isMainFrame,
+                  isTrustedMainDocumentURL(message.frameInfo.request.url),
                   let body = message.body as? [String: Any],
                   let action = body["action"] as? String else { return }
-            switch action {
-            case "purchaseFullAccess":
-                sendUnavailable(reason: "storekit2_purchase_not_configured")
-            case "restorePurchases":
-                sendUnavailable(reason: "storekit2_restore_not_configured")
+
+            switch message.name {
+            case "nurBilling":
+                switch action {
+                case "purchaseFullAccess":
+                    sendUnavailable(reason: "storekit2_purchase_not_configured")
+                case "restorePurchases":
+                    sendUnavailable(reason: "storekit2_restore_not_configured")
+                default:
+                    sendUnavailable(reason: "storekit2_unknown_action")
+                }
+            case "nurAuth":
+                guard action == "openAuthorizeUrl",
+                      let rawURL = body["url"] as? String,
+                      let url = URL(string: rawURL),
+                      OAuthURLPolicy.isAllowedAuthorizeURL(url) else { return }
+                beginAuthentication(at: url)
             default:
-                sendUnavailable(reason: "storekit2_unknown_action")
+                return
             }
+        }
+
+        func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+            if let window = webView?.window {
+                return window
+            }
+            for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+                if let window = scene.windows.first(where: { $0.isKeyWindow }) {
+                    return window
+                }
+            }
+            return ASPresentationAnchor()
+        }
+
+        func cancelAuthentication() {
+            authSession?.cancel()
+            authSession = nil
+        }
+
+        private func beginAuthentication(at url: URL) {
+            guard trustedMainDocumentReady,
+                  isTrustedMainDocumentURL(webView?.url),
+                  OAuthURLPolicy.isAllowedAuthorizeURL(url) else { return }
+
+            cancelAuthentication()
+            let session = ASWebAuthenticationSession(
+                url: url,
+                callbackURLScheme: OAuthURLPolicy.callbackScheme
+            ) { [weak self] callbackURL, _ in
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    self.authSession = nil
+                    guard let callbackURL,
+                          OAuthURLPolicy.isAllowedCallbackURL(callbackURL) else { return }
+                    self.pendingAuthCallbackURL = callbackURL
+                    self.dispatchPendingAuthCallback()
+                }
+            }
+            session.presentationContextProvider = self
+            session.prefersEphemeralWebBrowserSession = false
+            authSession = session
+            if !session.start() {
+                authSession = nil
+            }
+        }
+
+        private func dispatchPendingAuthCallback() {
+            guard let webView,
+                  let callbackURL = pendingAuthCallbackURL,
+                  trustedMainDocumentReady,
+                  isTrustedMainDocumentURL(webView.url),
+                  OAuthURLPolicy.isAllowedCallbackURL(callbackURL) else { return }
+
+            let callback = Self.jsonString(callbackURL.absoluteString)
+            let script = """
+            (function(){
+              var u=\(callback);
+              if(typeof window.onNativeAuthCallback==='function'){window.onNativeAuthCallback(u);}
+              else{window.__nurPendingAuthCallback=u;}
+              window.dispatchEvent(new CustomEvent('nur-auth-callback',{detail:{url:u}}));
+            })();
+            """
+            pendingAuthCallbackURL = nil
+            webView.evaluateJavaScript(script)
+        }
+
+        private func isTrustedMainDocumentURL(_ url: URL?) -> Bool {
+            guard let url,
+                  url.isFileURL,
+                  url.query == nil,
+                  url.fragment == nil,
+                  let trusted = Bundle.main.url(
+                    forResource: "index",
+                    withExtension: "html",
+                    subdirectory: "WebResources"
+                  ) else { return false }
+            return url.standardizedFileURL.path == trusted.standardizedFileURL.path
         }
 
         private func sendUnavailable(reason: String) {

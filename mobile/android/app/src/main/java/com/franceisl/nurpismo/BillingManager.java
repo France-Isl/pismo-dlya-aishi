@@ -141,7 +141,7 @@ final class BillingManager implements PurchasesUpdatedListener {
             BillingFlowParams.ProductDetailsParams.Builder productParams =
                     BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(details);
             String offerToken = offer.getOfferToken();
-            if (offerToken != null && !offerToken.isBlank()) {
+            if (offerToken != null && !offerToken.trim().isEmpty()) {
                 productParams.setOfferToken(offerToken);
             }
 
@@ -397,7 +397,7 @@ final class BillingManager implements PurchasesUpdatedListener {
         }
         EntitlementState next = new EntitlementState(
                 entitled,
-                priceLabel == null || priceLabel.isBlank() ? DEFAULT_PRICE : priceLabel,
+                priceLabel == null || priceLabel.trim().isEmpty() ? DEFAULT_PRICE : priceLabel,
                 reason == null ? "unknown" : reason,
                 mock
         );

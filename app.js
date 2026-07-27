@@ -16,6 +16,14 @@
   const params = new URLSearchParams(location.search);
   const BETA_PARAMETER = "beta";
   const BETA_STORAGE_KEY = "nurBetaCapability";
+  const SUPABASE_URL = String(CONFIG.supabaseUrl || "").replace(/\/+$/, "");
+  const SUPABASE_PUBLISHABLE_KEY = String(CONFIG.supabasePublishableKey || "").trim();
+  const CLOUD_TABLE = "glowletter_progress";
+  const CLOUD_SCHEMA_VERSION = 1;
+  const CLOUD_SYNC_DELAY = 900;
+  const CLOUD_MAX_WRITE_ATTEMPTS = 3;
+  const CLOUD_SELECT_COLUMNS = "schema_version,sender_name,recipient_name,language,current_letter_id,favorite_ids,rain_enabled,weather_enabled,built_in_track,nature_enabled,fullscreen_enabled,volume,revision,updated_at";
+  const AUTH_CALLBACK_PARAMETERS = ["code", "state", "error", "error_code", "error_description", "error_reason", "error_uri", "access_token", "refresh_token", "expires_in", "token_type", "provider_token", "provider_refresh_token"];
 
   const UI = {
     ru: {
@@ -45,7 +53,8 @@
     setupSenderPlaceholder:"Ваше имя",setupRecipientPlaceholder:"Имя получателя",aiSenderPlaceholder:"Ваше имя или Амина (дочь)",aiRecipientPlaceholder:"Имя или Мама",routeFrom:"ОТ",routeTo:"ДЛЯ",stateOn:"ВКЛ",stateOff:"ВЫКЛ",stateOpen:"ОТКРЫТЬ",trackPrimary:"основная мелодия",trackLight:"светлая версия",trackWarm:"тёплая версия",
     homeAria:"На главный экран",soundOnAria:"Включить нашид",soundOffAria:"Выключить нашид",natureOnAria:"Включить звуки природы",natureOffAria:"Выключить звуки природы",weatherAria:"Показать погоду",languageAria:"Изменить язык",libraryAria:"Коллекция писем",settingsAria:"Атмосфера и музыка",previousAria:"Предыдущее письмо",shareAria:"Поделиться письмом",closeAria:"Закрыть",closeEditorAria:"Закрыть редактор",closeLibraryAria:"Закрыть коллекцию",closeSettingsAria:"Закрыть настройки",homeScreenAria:"Главный экран",letterNavAria:"Переключение писем",aiModeAria:"Режим помощника",generatedLetterAria:"Сгенерированное письмо",generatedReplyAria:"Сгенерированный ответ",
     replyIncoming:"Что вам написали?",replyPlaceholder:"Вставьте сюда сообщение, на которое хотите ответить…",replyGoal:"Что вы хотите сказать · необязательно",replyGoalPlaceholder:"Например: принимаю предложение; приду в 19:00; хочу вежливо отказаться…",replyRelationshipLabel:"Кто вам написал · необязательно",replyToneLabel:"Как ответить · необязательно",replyHint:"Помощник напишет уважительный ответ без 18+, грубости и двусмысленных фраз. Если вопрос требует вашего решения, добавьте главную мысль, чтобы ИИ ничего не придумал за вас.",replyGenerate:"Подготовить ответ",replyGenerating:"Подбираю спокойный ответ…",replyReady:"ГОТОВЫЙ ОТВЕТ",replyVariant:"↻ Другой вариант",copyReply:"▣ Скопировать ответ",replySafety:"Вставьте обычное сообщение без запрещённого содержания.",replyShort:"Добавьте сообщение, чтобы помощник понял контекст.",
-    checkingPurchase:"Проверяю полный доступ…",allLetters:"Откройте полный GlowLetter",onePurchase:"Все 50 писем, ИИ‑редактор, помощник ответов и будущие функции — одной покупкой.",paywallBody:"Первые 10 писем остаются бесплатными. Полная коллекция, ИИ‑редактор, помощник ответов и будущие функции открываются навсегда.",benefit1:"все 50 персональных писем",benefit2:"ИИ‑письма с выбором стиля",benefit3:"помощник ответов",benefit4:"восстановление покупки",saveSettings:"Сохранить настройки",settingsSaved:"Настройки сохранены"
+    checkingPurchase:"Проверяю полный доступ…",allLetters:"Откройте полный GlowLetter",onePurchase:"Все 50 писем, ИИ‑редактор, помощник ответов и будущие функции — одной покупкой.",paywallBody:"Первые 10 писем остаются бесплатными. Полная коллекция, ИИ‑редактор, помощник ответов и будущие функции открываются навсегда.",benefit1:"все 50 персональных писем",benefit2:"ИИ‑письма с выбором стиля",benefit3:"помощник ответов",benefit4:"восстановление покупки",saveSettings:"Сохранить настройки",settingsSaved:"Настройки сохранены",
+    accountTitle:"Аккаунт и синхронизация",accountGuestNote:"Войдите, чтобы сохранять письма и настройки на ваших устройствах.",accountPrivacy:"Фото, своя музыка, тексты из помощника и закрытый тестовый доступ остаются только на этом устройстве.",continueGoogle:"Продолжить с Google",continueFacebook:"Продолжить с Facebook",signOut:"Выйти",cloudChecking:"Проверяю вход…",cloudProvidersChecking:"Проверяю способы входа…",cloudSignInPrompt:"Войдите, чтобы включить облачное сохранение",cloudSyncing:"Сохраняю прогресс…",cloudSynced:"Прогресс сохранён в облаке",cloudOffline:"Нет связи — изменения остаются на устройстве",cloudError:"Не удалось синхронизировать. Попробую снова при подключении.",cloudUnavailable:"Облачный вход сейчас недоступен",cloudSignInError:"Не удалось войти. Попробуйте ещё раз.",cloudSigningIn:"Открываю безопасный вход…",cloudSignedOut:"Вы вышли из аккаунта"
   });
   Object.assign(UI.en, {
     setupEyebrow:"BEFORE OPENING THE LETTER",setupTitle:"Who is this letter for?",setupNote:"Names are used only for the personal greeting and signature.",setupSubmit:"Open the letter",
@@ -54,7 +63,8 @@
     setupSenderPlaceholder:"Your name",setupRecipientPlaceholder:"Recipient's name",aiSenderPlaceholder:"Your name or Amina (daughter)",aiRecipientPlaceholder:"Name or Mum",routeFrom:"FROM",routeTo:"TO",stateOn:"ON",stateOff:"OFF",stateOpen:"OPEN",trackPrimary:"main melody",trackLight:"light version",trackWarm:"warm version",
     homeAria:"Go to the home screen",soundOnAria:"Play nasheed",soundOffAria:"Pause nasheed",natureOnAria:"Turn on nature sounds",natureOffAria:"Turn off nature sounds",weatherAria:"Show weather",languageAria:"Change language",libraryAria:"Letter collection",settingsAria:"Atmosphere and music",previousAria:"Previous letter",shareAria:"Share letter",closeAria:"Close",closeEditorAria:"Close editor",closeLibraryAria:"Close collection",closeSettingsAria:"Close settings",homeScreenAria:"Home screen",letterNavAria:"Browse letters",aiModeAria:"Assistant mode",generatedLetterAria:"Generated letter",generatedReplyAria:"Generated reply",
     replyIncoming:"What did they write to you?",replyPlaceholder:"Paste the message you want to answer…",replyGoal:"What do you want to say? · optional",replyGoalPlaceholder:"For example: I agree; I will arrive at 7 pm; I want to decline politely…",replyRelationshipLabel:"Who wrote to you? · optional",replyToneLabel:"How should the reply sound? · optional",replyHint:"The assistant drafts a respectful reply without adult, abusive, or suggestive wording. If the question needs your decision, add your main point so the AI does not invent it.",replyGenerate:"Draft a reply",replyGenerating:"Preparing a calm reply…",replyReady:"READY TO SEND",replyVariant:"↻ Another version",copyReply:"▣ Copy reply",replySafety:"Paste an ordinary message without prohibited content.",replyShort:"Add the received message so the assistant understands the context.",
-    checkingPurchase:"Checking full access…",allLetters:"Unlock all of GlowLetter",onePurchase:"All 50 letters, the AI editor, reply assistant, and future features with one purchase.",paywallBody:"The first 10 letters stay free. The full collection, AI editor, reply assistant, and future features unlock forever.",benefit1:"all 50 personal letters",benefit2:"AI letters with style selection",benefit3:"reply assistant",benefit4:"purchase restoration",saveSettings:"Save settings",settingsSaved:"Settings saved"
+    checkingPurchase:"Checking full access…",allLetters:"Unlock all of GlowLetter",onePurchase:"All 50 letters, the AI editor, reply assistant, and future features with one purchase.",paywallBody:"The first 10 letters stay free. The full collection, AI editor, reply assistant, and future features unlock forever.",benefit1:"all 50 personal letters",benefit2:"AI letters with style selection",benefit3:"reply assistant",benefit4:"purchase restoration",saveSettings:"Save settings",settingsSaved:"Settings saved",
+    accountTitle:"Account and sync",accountGuestNote:"Sign in to keep your letters and settings across your devices.",accountPrivacy:"Photos, custom audio, assistant text, and private beta access stay only on this device.",continueGoogle:"Continue with Google",continueFacebook:"Continue with Facebook",signOut:"Sign out",cloudChecking:"Checking your account…",cloudProvidersChecking:"Checking sign-in methods…",cloudSignInPrompt:"Sign in to enable cloud saving",cloudSyncing:"Saving your progress…",cloudSynced:"Progress saved to the cloud",cloudOffline:"Offline — changes remain on this device",cloudError:"Could not sync. I will retry when you are online.",cloudUnavailable:"Cloud sign-in is currently unavailable",cloudSignInError:"Could not sign in. Please try again.",cloudSigningIn:"Opening secure sign-in…",cloudSignedOut:"You are signed out"
   });
   Object.assign(UI.fr, {
     setupEyebrow:"AVANT D’OUVRIR LA LETTRE",setupTitle:"À qui s’adresse cette lettre ?",setupNote:"Les prénoms servent uniquement à personnaliser l’adresse et la signature.",setupSubmit:"Ouvrir la lettre",
@@ -63,7 +73,8 @@
     setupSenderPlaceholder:"Votre prénom",setupRecipientPlaceholder:"Prénom du destinataire",aiSenderPlaceholder:"Votre prénom ou Amina (fille)",aiRecipientPlaceholder:"Prénom ou Maman",routeFrom:"DE",routeTo:"POUR",stateOn:"ACTIF",stateOff:"INACTIF",stateOpen:"OUVRIR",trackPrimary:"mélodie principale",trackLight:"version lumineuse",trackWarm:"version chaleureuse",
     homeAria:"Aller à l’accueil",soundOnAria:"Lire le nasheed",soundOffAria:"Mettre le nasheed en pause",natureOnAria:"Activer les sons de la nature",natureOffAria:"Désactiver les sons de la nature",weatherAria:"Afficher la météo",languageAria:"Changer de langue",libraryAria:"Collection de lettres",settingsAria:"Ambiance et musique",previousAria:"Lettre précédente",shareAria:"Partager la lettre",closeAria:"Fermer",closeEditorAria:"Fermer l’éditeur",closeLibraryAria:"Fermer la collection",closeSettingsAria:"Fermer les réglages",homeScreenAria:"Écran d’accueil",letterNavAria:"Parcourir les lettres",aiModeAria:"Mode de l’assistant",generatedLetterAria:"Lettre générée",generatedReplyAria:"Réponse générée",
     replyIncoming:"Quel message avez-vous reçu ?",replyPlaceholder:"Collez le message auquel vous souhaitez répondre…",replyGoal:"Que souhaitez-vous répondre ? · facultatif",replyGoalPlaceholder:"Par exemple : je suis d’accord ; j’arriverai à 19 h ; je veux refuser poliment…",replyRelationshipLabel:"Qui vous a écrit ? · facultatif",replyToneLabel:"Quel ton employer ? · facultatif",replyHint:"L’assistant prépare une réponse respectueuse, sans contenu adulte, grossier ou ambigu. Si la question exige votre décision, ajoutez l’idée principale afin que l’IA ne l’invente pas.",replyGenerate:"Préparer une réponse",replyGenerating:"Je prépare une réponse sereine…",replyReady:"RÉPONSE PRÊTE",replyVariant:"↻ Une autre version",copyReply:"▣ Copier la réponse",replySafety:"Collez un message ordinaire sans contenu interdit.",replyShort:"Ajoutez le message reçu pour donner le contexte à l’assistant.",
-    checkingPurchase:"Vérification de l’accès complet…",allLetters:"Débloquez tout GlowLetter",onePurchase:"Les 50 lettres, l’éditeur IA, l’assistant de réponse et les futures fonctions en un seul achat.",paywallBody:"Les 10 premières lettres restent gratuites. La collection, l’éditeur IA, l’assistant de réponse et les futures fonctions sont débloqués pour toujours.",benefit1:"les 50 lettres personnelles",benefit2:"lettres IA avec choix du style",benefit3:"assistant de réponse",benefit4:"restauration de l’achat",saveSettings:"Enregistrer les réglages",settingsSaved:"Réglages enregistrés"
+    checkingPurchase:"Vérification de l’accès complet…",allLetters:"Débloquez tout GlowLetter",onePurchase:"Les 50 lettres, l’éditeur IA, l’assistant de réponse et les futures fonctions en un seul achat.",paywallBody:"Les 10 premières lettres restent gratuites. La collection, l’éditeur IA, l’assistant de réponse et les futures fonctions sont débloqués pour toujours.",benefit1:"les 50 lettres personnelles",benefit2:"lettres IA avec choix du style",benefit3:"assistant de réponse",benefit4:"restauration de l’achat",saveSettings:"Enregistrer les réglages",settingsSaved:"Réglages enregistrés",
+    accountTitle:"Compte et synchronisation",accountGuestNote:"Connectez-vous pour retrouver vos lettres et réglages sur vos appareils.",accountPrivacy:"Les photos, les fichiers audio personnels, les textes de l’assistant et l’accès bêta privé restent uniquement sur cet appareil.",continueGoogle:"Continuer avec Google",continueFacebook:"Continuer avec Facebook",signOut:"Se déconnecter",cloudChecking:"Vérification du compte…",cloudProvidersChecking:"Vérification des modes de connexion…",cloudSignInPrompt:"Connectez-vous pour activer la sauvegarde en ligne",cloudSyncing:"Enregistrement de votre progression…",cloudSynced:"Progression enregistrée en ligne",cloudOffline:"Hors connexion — les changements restent sur cet appareil",cloudError:"Synchronisation impossible. Nouvel essai dès le retour du réseau.",cloudUnavailable:"La connexion en ligne est indisponible",cloudSignInError:"Connexion impossible. Réessayez.",cloudSigningIn:"Ouverture de la connexion sécurisée…",cloudSignedOut:"Vous êtes déconnecté"
   });
   UI.ru.namesSettings = "Личное обращение";
   UI.en.namesSettings = "Personal names";
@@ -302,8 +313,12 @@
 
   let lang = ["ru", "en", "fr"].includes(params.get("lang")) ? params.get("lang") : (localStorage.getItem("nurLanguage") || "ru");
   if (!UI[lang]) lang = "ru";
-  let fromName = cleanName(params.has("from") ? params.get("from") : localStorage.getItem("nurFrom"));
-  let toName = cleanName(params.has("to") ? params.get("to") : localStorage.getItem("nurTo"));
+  const storedNamesAtLaunch = {
+    sender: cleanName(localStorage.getItem("nurFrom")),
+    recipient: cleanName(localStorage.getItem("nurTo"))
+  };
+  let fromName = cleanName(params.has("from") ? params.get("from") : storedNamesAtLaunch.sender);
+  let toName = cleanName(params.has("to") ? params.get("to") : storedNamesAtLaunch.recipient);
   const initialNamesReady = Boolean(fromName && toName);
   let sharedMessage = initialNamesReady ? decodeSharedMessage(params.get("msg")) : "";
   let letterDeck = sharedMessage ? [{ id: "shared", category: "warm", shared: true, ru: sharedMessage, en: sharedMessage, fr: sharedMessage }, ...LETTERS] : [...LETTERS];
@@ -336,6 +351,40 @@
   let favorites;
   try { favorites = new Set(JSON.parse(localStorage.getItem("nurFavorites") || "[]")); }
   catch { favorites = new Set(); localStorage.removeItem("nurFavorites"); }
+  const namesCameFromUrl = params.has("from") || params.has("to");
+  const initialLinkNames = namesCameFromUrl
+    ? { sender: cleanName(params.get("from")), recipient: cleanName(params.get("to")) }
+    : null;
+  let linkNamesActive = namesCameFromUrl;
+  const CLOUD_EVER_AUTHENTICATED_KEY = "nurCloudEverAuthenticatedV1";
+  const CLOUD_GUEST_SNAPSHOT_KEY = "nurCloudGuestSnapshotV1";
+  const CLOUD_GUEST_OWNER_KEY = "nurCloudGuestBootstrapOwnerV1";
+  const CLOUD_USER_SNAPSHOT_PREFIX = "nurCloudUserSnapshotV1:";
+  const CLOUD_USER_ENVELOPE_PREFIX = "nurCloudEnvelopeV1:";
+  let cloudClient = null;
+  let cloudSession = null;
+  let cloudUser = null;
+  let cloudProvidersKnown = false;
+  let cloudProviders = { google: false, facebook: false };
+  let cloudAuthBusy = false;
+  let cloudStatusKey = "cloudChecking";
+  let cloudReady = false;
+  let cloudHydrating = false;
+  let cloudLoadingUserId = "";
+  let cloudLoadedUserId = "";
+  let cloudLoadGeneration = 0;
+  let cloudRevision = 0;
+  let cloudRowExists = false;
+  let cloudSyncTimer = 0;
+  let cloudSyncing = false;
+  let cloudSyncQueued = false;
+  let cloudLastSignature = "";
+  let cloudBootstrapState = null;
+  let cloudBootstrapUserId = "";
+  let cloudNamesExplicitlySaved = false;
+  let cloudNames = linkNamesActive ? { sender: "", recipient: "" } : { sender: fromName, recipient: toName };
+  let cloudBuiltInTrack = selectedTrack >= 0 && selectedTrack <= 2 ? selectedTrack : Math.max(0, Math.min(Number(localStorage.getItem("nurLastBuiltInTrack") || 0), 2));
+  const handledAuthCodes = new Set();
 
   const audio = $("#nasheed");
   const homeScreen = $("#homeScreen");
@@ -484,6 +533,853 @@
     }
   }
 
+  function cloudConfigurationReady() {
+    try {
+      return new URL(SUPABASE_URL).protocol === "https:"
+        && SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_")
+        && typeof window.supabase?.createClient === "function";
+    } catch {
+      return false;
+    }
+  }
+
+  function authCallbackDetails(rawUrl) {
+    try {
+      const url = new URL(String(rawUrl || location.href), location.href);
+      const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+      const value = key => url.searchParams.get(key) || hash.get(key) || "";
+      const code = value("code");
+      const error = value("error") || value("error_code");
+      const hasSensitiveData = AUTH_CALLBACK_PARAMETERS.some(key => url.searchParams.has(key) || hash.has(key));
+      return { url, code, error, errorDescription: value("error_description"), hasSensitiveData };
+    } catch {
+      return { url: null, code: "", error: "", errorDescription: "", hasSensitiveData: false };
+    }
+  }
+
+  function stripAuthDataFromCurrentUrl() {
+    const url = new URL(location.href);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+    let changed = false;
+    AUTH_CALLBACK_PARAMETERS.forEach(key => {
+      if (url.searchParams.has(key)) { url.searchParams.delete(key); changed = true; }
+      if (hash.has(key)) { hash.delete(key); changed = true; }
+    });
+    if (!changed) return;
+    const nextHash = hash.toString();
+    url.hash = nextHash ? `#${nextHash}` : "";
+    history.replaceState(history.state || {}, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function isAcceptedAuthCallback(url) {
+    if (!url || url.hash) return false;
+    const noAuthorityExtras = !url.username && !url.password && !url.port;
+    if (url.origin === location.origin && url.pathname === location.pathname && !url.username && !url.password) return true;
+    return noAuthorityExtras && url.protocol === "com.franceisl.nurpismo:" && url.hostname === "auth" && url.pathname === "/callback";
+  }
+
+  function nativeAuthBridge() {
+    const bridge = window.NurAuth;
+    return bridge && typeof bridge.getRedirectUrl === "function" && typeof bridge.openAuthorizeUrl === "function" ? bridge : null;
+  }
+
+  function cloudRedirectUrl() {
+    const bridge = nativeAuthBridge();
+    if (bridge) {
+      try {
+        const nativeUrl = new URL(String(bridge.getRedirectUrl() || ""));
+        if (isAcceptedAuthCallback(nativeUrl)) return nativeUrl.toString();
+      } catch {}
+    }
+    return `${location.origin}${location.pathname}`;
+  }
+
+  function setCloudStatus(key) {
+    cloudStatusKey = UI[lang]?.[key] ? key : "cloudError";
+    renderCloudAccount();
+  }
+
+  function renderCloudAccount() {
+    const card = $("#accountCard");
+    if (!card) return;
+    setText("#accountTitle", t("accountTitle"));
+    setText("#accountGuestNote", t("accountGuestNote"));
+    setText("#accountPrivacyNote", t("accountPrivacy"));
+    setText("#googleSignIn span", t("continueGoogle"));
+    setText("#facebookSignIn span", t("continueFacebook"));
+    setText("#accountSignOut", t("signOut"));
+    setText("#accountStatus", t(cloudStatusKey));
+    card.dataset.state = cloudStatusKey === "cloudSyncing" || cloudAuthBusy ? "syncing" : cloudStatusKey === "cloudError" || cloudStatusKey === "cloudSignInError" ? "error" : "ready";
+
+    const signedIn = Boolean(cloudUser?.id);
+    $("#accountGuest").hidden = signedIn;
+    $("#accountUser").hidden = !signedIn;
+    const google = $("#googleSignIn");
+    const facebook = $("#facebookSignIn");
+    google.hidden = signedIn || !cloudProvidersKnown || !cloudProviders.google;
+    facebook.hidden = signedIn || !cloudProvidersKnown || !cloudProviders.facebook;
+    google.disabled = cloudAuthBusy;
+    facebook.disabled = cloudAuthBusy;
+    $("#accountSignOut").disabled = cloudAuthBusy;
+
+    if (signedIn) {
+      const email = String(cloudUser.email || "");
+      const metadata = cloudUser.user_metadata || {};
+      const label = cleanName(metadata.full_name || metadata.name || email.split("@")[0] || "GlowLetter");
+      setText("#accountUserName", label || "GlowLetter");
+      setText("#accountUserEmail", email);
+      setText("#accountAvatar", (label || email || "G").slice(0, 1).toUpperCase());
+    }
+  }
+
+  async function detectCloudProviders() {
+    if (!cloudClient) return;
+    try {
+      const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+        headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
+        cache: "no-store"
+      });
+      if (!response.ok) throw new Error("provider settings unavailable");
+      const settings = await response.json();
+      cloudProviders = {
+        google: settings?.external?.google === true,
+        facebook: settings?.external?.facebook === true
+      };
+      cloudProvidersKnown = true;
+      if (!cloudUser) setCloudStatus("cloudSignInPrompt"); else renderCloudAccount();
+    } catch {
+      cloudProvidersKnown = false;
+      if (!cloudUser) setCloudStatus(navigator.onLine ? "cloudUnavailable" : "cloudOffline");
+    }
+  }
+
+  function cloudProgressState() {
+    const entryId = Number(currentEntry()?.id);
+    const storedId = Number(localStorage.getItem("nurLetterIndex") || 1);
+    const currentLetterId = Number.isInteger(entryId) && entryId >= 1 && entryId <= 50
+      ? entryId
+      : Math.max(1, Math.min(Number.isFinite(storedId) ? storedId : 1, 50));
+    const favoriteIds = [...favorites]
+      .map(value => Number(value))
+      .filter(value => Number.isInteger(value) && value >= 1 && value <= 50)
+      .sort((left, right) => left - right);
+    const volume = Math.max(0, Math.min(Number.isFinite(audio.volume) ? audio.volume : .62, 1));
+    return {
+      schema_version: CLOUD_SCHEMA_VERSION,
+      sender_name: cleanName(cloudNames.sender),
+      recipient_name: cleanName(cloudNames.recipient),
+      language: ["ru", "en", "fr"].includes(lang) ? lang : "ru",
+      current_letter_id: currentLetterId,
+      favorite_ids: favoriteIds,
+      rain_enabled: Boolean(rainScene.enabled),
+      weather_enabled: Boolean(weatherEnabled),
+      built_in_track: Math.max(0, Math.min(Number(cloudBuiltInTrack) || 0, 2)),
+      nature_enabled: Boolean(isNaturePlaying || localStorage.getItem("nurNature") === "on"),
+      fullscreen_enabled: Boolean(document.fullscreenElement || localStorage.getItem("nurFullscreen") === "on"),
+      volume: Math.round(volume * 1000) / 1000
+    };
+  }
+
+  function defaultCloudProgressState() {
+    return {
+      schema_version: CLOUD_SCHEMA_VERSION,
+      sender_name: "",
+      recipient_name: "",
+      language: "ru",
+      current_letter_id: 1,
+      favorite_ids: [],
+      rain_enabled: true,
+      weather_enabled: false,
+      built_in_track: 0,
+      nature_enabled: false,
+      fullscreen_enabled: false,
+      volume: .62
+    };
+  }
+
+  function normalizeProgressSnapshot(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    const defaults = defaultCloudProgressState();
+    const number = (key, min, max, fallback) => {
+      const candidate = Number(value[key]);
+      return Number.isFinite(candidate) ? Math.max(min, Math.min(candidate, max)) : fallback;
+    };
+    const boolean = key => typeof value[key] === "boolean" ? value[key] : defaults[key];
+    const favoriteIds = [...new Set((Array.isArray(value.favorite_ids) ? value.favorite_ids : [])
+      .map(item => Number(item))
+      .filter(item => Number.isInteger(item) && item >= 1 && item <= 50))]
+      .sort((left, right) => left - right);
+    return {
+      schema_version: CLOUD_SCHEMA_VERSION,
+      sender_name: cleanName(value.sender_name),
+      recipient_name: cleanName(value.recipient_name),
+      language: ["ru", "en", "fr"].includes(value.language) ? value.language : defaults.language,
+      current_letter_id: Math.round(number("current_letter_id", 1, 50, defaults.current_letter_id)),
+      favorite_ids: favoriteIds,
+      rain_enabled: boolean("rain_enabled"),
+      weather_enabled: boolean("weather_enabled"),
+      built_in_track: Math.round(number("built_in_track", 0, 2, defaults.built_in_track)),
+      nature_enabled: boolean("nature_enabled"),
+      fullscreen_enabled: boolean("fullscreen_enabled"),
+      volume: Math.round(number("volume", 0, 1, defaults.volume) * 1000) / 1000
+    };
+  }
+
+  function readProgressSnapshot(key) {
+    try { return normalizeProgressSnapshot(JSON.parse(localStorage.getItem(key) || "null")); }
+    catch { return null; }
+  }
+
+  function writeProgressSnapshot(key, state) {
+    const normalized = normalizeProgressSnapshot(state);
+    if (!normalized) return null;
+    try { localStorage.setItem(key, JSON.stringify(normalized)); }
+    catch { return null; }
+    return normalized;
+  }
+
+  function userSnapshotKey(userId) {
+    return `${CLOUD_USER_SNAPSHOT_PREFIX}${encodeURIComponent(String(userId || ""))}`;
+  }
+
+  function userEnvelopeKey(userId) {
+    return `${CLOUD_USER_ENVELOPE_PREFIX}${encodeURIComponent(String(userId || ""))}`;
+  }
+
+  function cloudStateEquals(left, right) {
+    return cloudProgressSignature(normalizeProgressSnapshot(left)) === cloudProgressSignature(normalizeProgressSnapshot(right));
+  }
+
+  function nextEnvelopeVersion(value) {
+    const current = Number.isSafeInteger(Number(value)) && Number(value) >= 0 ? Number(value) : 0;
+    return current >= Number.MAX_SAFE_INTEGER - 1 ? 1 : current + 1;
+  }
+
+  function normalizeCloudRevision(value) {
+    const revision = Number(value);
+    return Number.isSafeInteger(revision) && revision >= 0 ? revision : 0;
+  }
+
+  function normalizeProgressEnvelope(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    const state = normalizeProgressSnapshot(value.state);
+    const baseState = normalizeProgressSnapshot(value.baseState);
+    if (!state || !baseState || typeof value.dirty !== "boolean") return null;
+    const revision = Number(value.baseRevision);
+    const version = Number(value.version);
+    const dirtyAt = Number(value.dirtyAt);
+    return {
+      state,
+      baseState,
+      baseRevision: normalizeCloudRevision(revision),
+      dirty: value.dirty,
+      version: Number.isSafeInteger(version) && version >= 0 ? version : 0,
+      dirtyAt: Number.isFinite(dirtyAt) && dirtyAt >= 0 && dirtyAt <= 8640000000000000 ? Math.round(dirtyAt) : 0
+    };
+  }
+
+  function readProgressEnvelope(userId) {
+    if (!userId) return null;
+    try { return normalizeProgressEnvelope(JSON.parse(localStorage.getItem(userEnvelopeKey(userId)) || "null")); }
+    catch { return null; }
+  }
+
+  function writeProgressEnvelope(userId, envelope) {
+    if (!userId) return null;
+    const normalized = normalizeProgressEnvelope(envelope);
+    if (!normalized) return null;
+    try { localStorage.setItem(userEnvelopeKey(userId), JSON.stringify(normalized)); }
+    catch { return null; }
+    return normalized;
+  }
+
+  function mergeProgressStates(localState, baseState, remoteState) {
+    const local = normalizeProgressSnapshot(localState) || defaultCloudProgressState();
+    const base = normalizeProgressSnapshot(baseState) || defaultCloudProgressState();
+    const remote = normalizeProgressSnapshot(remoteState) || defaultCloudProgressState();
+    const merged = {};
+    Object.keys(defaultCloudProgressState()).forEach(key => {
+      const localChanged = JSON.stringify(local[key]) !== JSON.stringify(base[key]);
+      merged[key] = localChanged ? local[key] : remote[key];
+    });
+    return normalizeProgressSnapshot(merged) || defaultCloudProgressState();
+  }
+
+  function captureGuestBootstrap() {
+    if (localStorage.getItem(CLOUD_EVER_AUTHENTICATED_KEY) === "1") return null;
+    const state = cloudProgressState();
+    state.sender_name = linkNamesActive ? cleanName(localStorage.getItem("nurFrom")) : cleanName(fromName);
+    state.recipient_name = linkNamesActive ? cleanName(localStorage.getItem("nurTo")) : cleanName(toName);
+    return writeProgressSnapshot(CLOUD_GUEST_SNAPSHOT_KEY, state);
+  }
+
+  function saveUserProgressSnapshot(userId, state = cloudProgressState()) {
+    if (!userId) return null;
+    return writeProgressSnapshot(userSnapshotKey(userId), state);
+  }
+
+  function dirtyProgressEnvelope(userId, state = cloudProgressState()) {
+    if (!userId) return null;
+    const normalizedState = normalizeProgressSnapshot(state) || defaultCloudProgressState();
+    const existing = readProgressEnvelope(userId);
+    if (existing && existing.dirty && cloudStateEquals(existing.state, normalizedState)) {
+      saveUserProgressSnapshot(userId, normalizedState);
+      return existing;
+    }
+    if (existing && !existing.dirty && cloudStateEquals(existing.state, normalizedState)) {
+      saveUserProgressSnapshot(userId, normalizedState);
+      return existing;
+    }
+    const fallbackBase = cloudBootstrapUserId === userId && cloudBootstrapState
+      ? cloudBootstrapState
+      : (readProgressSnapshot(userSnapshotKey(userId)) || defaultCloudProgressState());
+    const envelope = writeProgressEnvelope(userId, {
+      state: normalizedState,
+      baseState: existing?.baseState || fallbackBase,
+      baseRevision: existing?.baseRevision ?? (cloudLoadedUserId === userId ? cloudRevision : 0),
+      dirty: true,
+      version: nextEnvelopeVersion(existing?.version),
+      dirtyAt: Date.now()
+    });
+    saveUserProgressSnapshot(userId, normalizedState);
+    return envelope;
+  }
+
+  function cleanProgressEnvelope(userId, state, revision, version = 0) {
+    const normalizedState = normalizeProgressSnapshot(state) || defaultCloudProgressState();
+    const envelope = writeProgressEnvelope(userId, {
+      state: normalizedState,
+      baseState: normalizedState,
+      baseRevision: normalizeCloudRevision(revision),
+      dirty: false,
+      version: Number.isSafeInteger(Number(version)) && Number(version) >= 0 ? Number(version) : 0,
+      dirtyAt: 0
+    });
+    saveUserProgressSnapshot(userId, normalizedState);
+    return envelope;
+  }
+
+  function bootstrapStateForUser(userId) {
+    const envelope = readProgressEnvelope(userId);
+    if (envelope) return envelope.state;
+    const ownSnapshot = readProgressSnapshot(userSnapshotKey(userId));
+    if (ownSnapshot) return ownSnapshot;
+    const guestSnapshot = readProgressSnapshot(CLOUD_GUEST_SNAPSHOT_KEY);
+    const guestOwner = localStorage.getItem(CLOUD_GUEST_OWNER_KEY) || "";
+    const authenticatedBefore = localStorage.getItem(CLOUD_EVER_AUTHENTICATED_KEY) === "1";
+    if (guestSnapshot && (guestOwner === userId || (!authenticatedBefore && !guestOwner))) {
+      if (!guestOwner) localStorage.setItem(CLOUD_GUEST_OWNER_KEY, userId);
+      return guestSnapshot;
+    }
+    return defaultCloudProgressState();
+  }
+
+  function guestViewState() {
+    if (localStorage.getItem(CLOUD_EVER_AUTHENTICATED_KEY) !== "1") {
+      return captureGuestBootstrap() || defaultCloudProgressState();
+    }
+    return readProgressSnapshot(CLOUD_GUEST_SNAPSHOT_KEY) || defaultCloudProgressState();
+  }
+
+  function applyIsolatedProgress(state) {
+    const normalized = normalizeProgressSnapshot(state) || defaultCloudProgressState();
+    cloudNamesExplicitlySaved = false;
+    cloudNames = { sender: normalized.sender_name, recipient: normalized.recipient_name };
+    applyCloudProgress(normalized);
+    if (linkNamesActive && initialLinkNames) {
+      if (normalized.sender_name) localStorage.setItem("nurFrom", normalized.sender_name); else localStorage.removeItem("nurFrom");
+      if (normalized.recipient_name) localStorage.setItem("nurTo", normalized.recipient_name); else localStorage.removeItem("nurTo");
+      setNames(initialLinkNames.sender, initialLinkNames.recipient, { persist: false });
+    }
+    return normalized;
+  }
+
+  function cloudProgressSignature(state = cloudProgressState()) {
+    return JSON.stringify(state);
+  }
+
+  function scheduleCloudSync({ includeNames = false, immediate = false } = {}) {
+    if (includeNames) {
+      cloudNames = { sender: fromName, recipient: toName };
+      cloudNamesExplicitlySaved = true;
+    }
+    if (cloudHydrating) return;
+    if (!cloudUser?.id) {
+      captureGuestBootstrap();
+      return;
+    }
+    const envelope = dirtyProgressEnvelope(cloudUser.id);
+    if (!cloudReady || !envelope?.dirty) return;
+    clearTimeout(cloudSyncTimer);
+    cloudSyncTimer = setTimeout(() => flushCloudSync(false), immediate ? 0 : CLOUD_SYNC_DELAY);
+  }
+
+  async function fetchCloudProgressRow(userId) {
+    return cloudClient
+      .from(CLOUD_TABLE)
+      .select(CLOUD_SELECT_COLUMNS)
+      .eq("user_id", userId)
+      .maybeSingle();
+  }
+
+  function isUniqueRevisionConflict(error) {
+    return String(error?.code || "") === "23505";
+  }
+
+  async function writeCloudProgressCas(userId, envelope, rowExists) {
+    const baseRevision = normalizeCloudRevision(envelope.baseRevision);
+    if (baseRevision >= Number.MAX_SAFE_INTEGER) throw new Error("cloud revision exhausted");
+    const nextRevision = baseRevision + 1;
+    const payload = {
+      user_id: userId,
+      ...envelope.state,
+      revision: nextRevision,
+      updated_at: new Date().toISOString()
+    };
+    let result;
+    if (rowExists) {
+      result = await cloudClient
+        .from(CLOUD_TABLE)
+        .update(payload)
+        .eq("user_id", userId)
+        .eq("revision", envelope.baseRevision)
+        .select("revision,updated_at")
+        .maybeSingle();
+    } else {
+      result = await cloudClient
+        .from(CLOUD_TABLE)
+        .insert(payload)
+        .select("revision,updated_at")
+        .maybeSingle();
+    }
+    if (result.error) {
+      if (!rowExists && isUniqueRevisionConflict(result.error)) return { conflict: true };
+      throw result.error;
+    }
+    if (!result.data) return { conflict: true };
+    return {
+      conflict: false,
+      revision: Math.max(nextRevision, normalizeCloudRevision(result.data.revision)),
+      updatedAt: String(result.data.updated_at || payload.updated_at)
+    };
+  }
+
+  function persistConflictMerge(userId, latestEnvelope, remoteState, remoteRevision, rowExists) {
+    const mergedState = mergeProgressStates(latestEnvelope.state, latestEnvelope.baseState, remoteState);
+    const dirty = rowExists ? !cloudStateEquals(mergedState, remoteState) : true;
+    const mergedEnvelope = writeProgressEnvelope(userId, {
+      state: mergedState,
+      baseState: remoteState,
+      baseRevision: remoteRevision,
+      dirty,
+      version: nextEnvelopeVersion(latestEnvelope.version),
+      dirtyAt: dirty ? (latestEnvelope.dirtyAt || Date.now()) : 0
+    });
+    saveUserProgressSnapshot(userId, mergedState);
+    return mergedEnvelope;
+  }
+
+  function acknowledgeCloudWrite(userId, sentEnvelope, result) {
+    const latest = readProgressEnvelope(userId) || sentEnvelope;
+    if (latest.baseRevision > result.revision) return { pending: latest.dirty, envelope: latest };
+    const unchanged = latest.version === sentEnvelope.version && cloudStateEquals(latest.state, sentEnvelope.state);
+    let nextEnvelope;
+    if (unchanged) {
+      nextEnvelope = cleanProgressEnvelope(userId, sentEnvelope.state, result.revision, latest.version);
+    } else {
+      nextEnvelope = writeProgressEnvelope(userId, {
+        state: latest.state,
+        baseState: sentEnvelope.state,
+        baseRevision: result.revision,
+        dirty: true,
+        version: latest.version,
+        dirtyAt: latest.dirtyAt || Date.now()
+      });
+      saveUserProgressSnapshot(userId, latest.state);
+    }
+    if (!nextEnvelope) return { pending: true, envelope: latest, persistFailed: true };
+    localStorage.setItem(`nurCloudRevision:${userId}`, String(result.revision));
+    if (result.updatedAt) localStorage.setItem(`nurCloudUpdatedAt:${userId}`, result.updatedAt);
+    return { pending: Boolean(nextEnvelope?.dirty), envelope: nextEnvelope };
+  }
+
+  async function flushCloudSync(force = false) {
+    if (!cloudClient || !cloudReady || !cloudUser?.id || !cloudSession?.access_token) return false;
+    if (cloudSyncing) {
+      cloudSyncQueued = true;
+      return false;
+    }
+    const userId = cloudUser.id;
+    let envelope = readProgressEnvelope(userId);
+    if (force && (!envelope || (!envelope.dirty && !cloudStateEquals(envelope.state, cloudProgressState())))) {
+      envelope = dirtyProgressEnvelope(userId);
+    }
+    if (!envelope?.dirty) return true;
+
+    cloudSyncing = true;
+    cloudSyncQueued = false;
+    setCloudStatus("cloudSyncing");
+    try {
+      let rowExists = cloudRowExists;
+      for (let attempt = 0; attempt < CLOUD_MAX_WRITE_ATTEMPTS; attempt += 1) {
+        envelope = readProgressEnvelope(userId) || envelope;
+        if (!envelope?.dirty) return true;
+        const sentEnvelope = envelope;
+        const result = await writeCloudProgressCas(userId, sentEnvelope, rowExists);
+        if (!result.conflict) {
+          const acknowledged = acknowledgeCloudWrite(userId, sentEnvelope, result);
+          if (acknowledged.persistFailed) throw new Error("progress envelope unavailable");
+          if (cloudUser?.id === userId) {
+            cloudRevision = result.revision;
+            cloudRowExists = true;
+            cloudLastSignature = cloudProgressSignature(sentEnvelope.state);
+            if (!acknowledged.pending) {
+              cloudNamesExplicitlySaved = false;
+              setCloudStatus("cloudSynced");
+            } else {
+              cloudSyncQueued = true;
+              setCloudStatus("cloudSyncing");
+            }
+          }
+          return !acknowledged.pending;
+        }
+
+        const { data: remoteRow, error: remoteError } = await fetchCloudProgressRow(userId);
+        if (remoteError) throw remoteError;
+        rowExists = Boolean(remoteRow);
+        const remoteState = remoteRow ? normalizeProgressSnapshot(remoteRow) : defaultCloudProgressState();
+        const remoteRevision = remoteRow ? normalizeCloudRevision(remoteRow.revision) : 0;
+        const latestEnvelope = readProgressEnvelope(userId) || sentEnvelope;
+        envelope = persistConflictMerge(userId, latestEnvelope, remoteState, remoteRevision, rowExists);
+        if (!envelope) throw new Error("progress envelope unavailable");
+        if (cloudUser?.id === userId) {
+          cloudRevision = remoteRevision;
+          cloudRowExists = rowExists;
+          applyIsolatedProgress(envelope.state);
+        }
+        if (!envelope.dirty) {
+          localStorage.setItem(`nurCloudRevision:${userId}`, String(remoteRevision));
+          if (remoteRow?.updated_at) localStorage.setItem(`nurCloudUpdatedAt:${userId}`, String(remoteRow.updated_at));
+          if (cloudUser?.id === userId) setCloudStatus("cloudSynced");
+          return true;
+        }
+      }
+      if (cloudUser?.id === userId) setCloudStatus("cloudError");
+      return false;
+    } catch {
+      if (cloudUser?.id === userId) setCloudStatus(navigator.onLine ? "cloudError" : "cloudOffline");
+      return false;
+    } finally {
+      cloudSyncing = false;
+      if (cloudSyncQueued) {
+        cloudSyncQueued = false;
+        if (cloudUser?.id && cloudReady) {
+          clearTimeout(cloudSyncTimer);
+          cloudSyncTimer = setTimeout(() => flushCloudSync(false), 0);
+        }
+      }
+    }
+  }
+
+  function applyCloudProgress(row) {
+    cloudHydrating = true;
+    try {
+      const remoteNames = {
+        sender: cleanName(row.sender_name),
+        recipient: cleanName(row.recipient_name)
+      };
+      if (!cloudNamesExplicitlySaved) cloudNames = remoteNames;
+      if (!linkNamesActive && !cloudNamesExplicitlySaved) setNames(remoteNames.sender, remoteNames.recipient, { explicit: false });
+
+      lang = ["ru", "en", "fr"].includes(row.language) ? row.language : "ru";
+      localStorage.setItem("nurLanguage", lang);
+
+      const remoteLetterId = Math.max(1, Math.min(Number(row.current_letter_id) || 1, 50));
+      if (!sharedMessage) {
+        const remoteIndex = letterDeck.findIndex(item => Number(item.id) === remoteLetterId);
+        if (remoteIndex >= 0) currentIndex = remoteIndex;
+      }
+      localStorage.setItem("nurLetterIndex", String(remoteLetterId));
+
+      favorites = new Set((Array.isArray(row.favorite_ids) ? row.favorite_ids : [])
+        .map(value => Number(value))
+        .filter(value => Number.isInteger(value) && value >= 1 && value <= 50)
+        .map(String));
+      localStorage.setItem("nurFavorites", JSON.stringify([...favorites]));
+
+      rainScene.setEnabled(row.rain_enabled !== false, false);
+      localStorage.setItem("nurRain", rainScene.enabled ? "on" : "off");
+      weatherEnabled = row.weather_enabled === true;
+      localStorage.setItem("nurWeather", weatherEnabled ? "on" : "off");
+
+      cloudBuiltInTrack = Math.max(0, Math.min(Number(row.built_in_track) || 0, 2));
+      selectedTrack = cloudBuiltInTrack;
+      localStorage.setItem("nurTrack", String(selectedTrack));
+      localStorage.setItem("nurLastBuiltInTrack", String(cloudBuiltInTrack));
+
+      const remoteNature = row.nature_enabled === true;
+      localStorage.setItem("nurNature", remoteNature ? "on" : "off");
+      if (!remoteNature && isNaturePlaying) setNaturePlaying(false, false);
+      localStorage.setItem("nurFullscreen", row.fullscreen_enabled === true ? "on" : "off");
+
+      const volume = Math.max(0, Math.min(Number(row.volume), 1));
+      audio.volume = Number.isFinite(volume) ? volume : .62;
+      localStorage.setItem("nurVolume", String(audio.volume));
+
+      $$("[data-track]").forEach(option => option.classList.toggle("is-active", Number(option.dataset.track) === selectedTrack));
+      applyLanguage();
+      if (storyOpened) renderLetter();
+      renderLibrary();
+
+      const remoteSignatureState = cloudProgressState();
+      remoteSignatureState.sender_name = remoteNames.sender;
+      remoteSignatureState.recipient_name = remoteNames.recipient;
+      cloudLastSignature = cloudProgressSignature(remoteSignatureState);
+    } finally {
+      cloudHydrating = false;
+    }
+  }
+
+  async function loadCloudProgress(user) {
+    const userId = user?.id || "";
+    if (!userId || !cloudClient || cloudLoadingUserId === userId) return;
+    cloudLoadingUserId = userId;
+    const generation = ++cloudLoadGeneration;
+    cloudReady = false;
+    setCloudStatus("cloudChecking");
+    try {
+      const { data, error } = await fetchCloudProgressRow(userId);
+      if (error) throw error;
+      if (generation !== cloudLoadGeneration || cloudUser?.id !== userId) return;
+
+      const existingEnvelope = readProgressEnvelope(userId);
+      if (data) {
+        const knownRevision = normalizeCloudRevision(localStorage.getItem(`nurCloudRevision:${userId}`));
+        const remoteRevision = normalizeCloudRevision(data.revision);
+        const remoteState = normalizeProgressSnapshot(data) || defaultCloudProgressState();
+        const envelope = existingEnvelope?.dirty
+          ? persistConflictMerge(userId, existingEnvelope, remoteState, remoteRevision, true)
+          : cleanProgressEnvelope(userId, remoteState, remoteRevision, existingEnvelope?.version || 0);
+        if (!envelope) throw new Error("progress envelope unavailable");
+        cloudRevision = remoteRevision;
+        cloudRowExists = true;
+        applyIsolatedProgress(envelope.state);
+        cloudBootstrapState = null;
+        cloudBootstrapUserId = "";
+        localStorage.setItem(`nurCloudRevision:${userId}`, String(remoteRevision));
+        if (data.updated_at) localStorage.setItem(`nurCloudUpdatedAt:${userId}`, String(data.updated_at));
+        if (remoteRevision < knownRevision) localStorage.setItem(`nurCloudRevisionReset:${userId}`, "seen");
+        cloudReady = true;
+        cloudLoadedUserId = userId;
+        if (envelope.dirty) await flushCloudSync(false);
+        else setCloudStatus("cloudSynced");
+      } else {
+        const bootstrap = existingEnvelope?.state || (cloudBootstrapUserId === userId && cloudBootstrapState
+          ? cloudBootstrapState
+          : bootstrapStateForUser(userId));
+        const normalizedBootstrap = normalizeProgressSnapshot(bootstrap) || defaultCloudProgressState();
+        const envelope = writeProgressEnvelope(userId, {
+          state: normalizedBootstrap,
+          baseState: defaultCloudProgressState(),
+          baseRevision: 0,
+          dirty: true,
+          version: nextEnvelopeVersion(existingEnvelope?.version),
+          dirtyAt: existingEnvelope?.dirtyAt || Date.now()
+        });
+        if (!envelope) throw new Error("progress envelope unavailable");
+        saveUserProgressSnapshot(userId, normalizedBootstrap);
+        applyIsolatedProgress(normalizedBootstrap);
+        cloudRevision = 0;
+        cloudRowExists = false;
+        cloudLastSignature = "";
+        cloudReady = true;
+        cloudLoadedUserId = userId;
+        cloudBootstrapState = null;
+        cloudBootstrapUserId = "";
+        await flushCloudSync(true);
+      }
+    } catch {
+      if (generation === cloudLoadGeneration) {
+        cloudReady = false;
+        setCloudStatus(navigator.onLine ? "cloudError" : "cloudOffline");
+      }
+    } finally {
+      if (cloudLoadingUserId === userId) cloudLoadingUserId = "";
+    }
+  }
+
+  async function handleCloudSession(session) {
+    const previousUserId = cloudUser?.id || "";
+    const nextUser = session?.user || null;
+    if (previousUserId && previousUserId !== nextUser?.id) saveUserProgressSnapshot(previousUserId);
+    cloudSession = session || null;
+    cloudUser = nextUser;
+    renderCloudAccount();
+    if (!cloudUser?.id) {
+      clearTimeout(cloudSyncTimer);
+      cloudLoadGeneration += 1;
+      cloudSyncQueued = false;
+      cloudReady = false;
+      cloudLoadedUserId = "";
+      cloudLoadingUserId = "";
+      cloudRevision = 0;
+      cloudRowExists = false;
+      cloudLastSignature = "";
+      cloudBootstrapState = null;
+      cloudBootstrapUserId = "";
+      cloudNamesExplicitlySaved = false;
+      applyIsolatedProgress(guestViewState());
+      setCloudStatus(cloudProvidersKnown ? "cloudSignInPrompt" : "cloudProvidersChecking");
+      return;
+    }
+    if (cloudLoadedUserId === cloudUser.id && cloudReady) {
+      setCloudStatus("cloudSynced");
+      return;
+    }
+    if (cloudLoadingUserId === cloudUser.id) return;
+    clearTimeout(cloudSyncTimer);
+    cloudReady = false;
+    cloudLoadedUserId = "";
+    cloudRowExists = false;
+    cloudNamesExplicitlySaved = false;
+    cloudBootstrapState = bootstrapStateForUser(cloudUser.id);
+    cloudBootstrapUserId = cloudUser.id;
+    cloudRevision = readProgressEnvelope(cloudUser.id)?.baseRevision || 0;
+    localStorage.setItem(CLOUD_EVER_AUTHENTICATED_KEY, "1");
+    applyIsolatedProgress(cloudBootstrapState);
+    await loadCloudProgress(cloudUser);
+  }
+
+  async function exchangeCloudAuthCallback(rawUrl) {
+    if (!cloudClient) return;
+    const callback = authCallbackDetails(rawUrl);
+    if (!isAcceptedAuthCallback(callback.url)) return;
+    try { delete window.__nurPendingAuthCallback; } catch { window.__nurPendingAuthCallback = ""; }
+    if (callback.error) {
+      setCloudStatus("cloudSignInError");
+      showToast(t("cloudSignInError"), 3800);
+      return;
+    }
+    if (!callback.code || handledAuthCodes.has(callback.code)) return;
+    handledAuthCodes.add(callback.code);
+    cloudAuthBusy = true;
+    setCloudStatus("cloudChecking");
+    try {
+      const { data, error } = await cloudClient.auth.exchangeCodeForSession(callback.code);
+      if (error) throw error;
+      await handleCloudSession(data?.session || null);
+    } catch {
+      setCloudStatus("cloudSignInError");
+      showToast(t("cloudSignInError"), 3800);
+    } finally {
+      cloudAuthBusy = false;
+      renderCloudAccount();
+    }
+  }
+
+  async function signInWithCloud(provider) {
+    if (!cloudClient || !cloudProvidersKnown || cloudProviders[provider] !== true || cloudAuthBusy) return;
+    captureGuestBootstrap();
+    cloudAuthBusy = true;
+    setCloudStatus("cloudSigningIn");
+    try {
+      const { data, error } = await cloudClient.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: cloudRedirectUrl(), skipBrowserRedirect: true }
+      });
+      if (error || !data?.url) throw error || new Error("missing authorization URL");
+      const authorizeUrl = new URL(data.url);
+      if (authorizeUrl.origin !== SUPABASE_URL) throw new Error("unexpected authorization origin");
+      const bridge = nativeAuthBridge();
+      if (bridge) {
+        bridge.openAuthorizeUrl(authorizeUrl.toString());
+        cloudAuthBusy = false;
+        renderCloudAccount();
+      } else {
+        location.assign(authorizeUrl.toString());
+      }
+    } catch {
+      cloudAuthBusy = false;
+      setCloudStatus("cloudSignInError");
+      showToast(t("cloudSignInError"), 3800);
+    }
+  }
+
+  async function signOutCloud() {
+    if (!cloudClient || cloudAuthBusy) return;
+    cloudAuthBusy = true;
+    renderCloudAccount();
+    try {
+      await flushCloudSync(false);
+      const { error } = await cloudClient.auth.signOut();
+      if (error) throw error;
+      await handleCloudSession(null);
+      showToast(t("cloudSignedOut"));
+    } catch {
+      setCloudStatus("cloudError");
+    } finally {
+      cloudAuthBusy = false;
+      renderCloudAccount();
+    }
+  }
+
+  async function initializeCloudAuth() {
+    const pageCallback = authCallbackDetails(location.href);
+    if (pageCallback.hasSensitiveData) stripAuthDataFromCurrentUrl();
+    if (pageCallback.code) {
+      if (localStorage.getItem(CLOUD_EVER_AUTHENTICATED_KEY) === "1") applyIsolatedProgress(defaultCloudProgressState());
+      else captureGuestBootstrap();
+    }
+    if (!cloudConfigurationReady()) {
+      setCloudStatus("cloudUnavailable");
+      return;
+    }
+
+    cloudClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        flowType: "pkce",
+        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
+        storageKey: "glowletter-auth-v1"
+      }
+    });
+
+    cloudClient.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => handleCloudSession(session), 0);
+    });
+
+    window.onNativeAuthCallback = rawUrl => exchangeCloudAuthCallback(rawUrl);
+    addEventListener("nur-auth-callback", event => exchangeCloudAuthCallback(event.detail?.url || event.detail));
+    const pendingNativeCallback = window.__nurPendingAuthCallback;
+    try { delete window.__nurPendingAuthCallback; } catch { window.__nurPendingAuthCallback = ""; }
+
+    detectCloudProviders();
+    if (pageCallback.hasSensitiveData) await exchangeCloudAuthCallback(pageCallback.url?.toString());
+    if (pendingNativeCallback) await exchangeCloudAuthCallback(pendingNativeCallback?.url || pendingNativeCallback);
+
+    const { data, error } = await cloudClient.auth.getSession();
+    if (error) {
+      setCloudStatus("cloudSignInError");
+      return;
+    }
+    await handleCloudSession(data?.session || null);
+  }
+
+  window.GlowLetterCloud = Object.freeze({
+    signIn: provider => signInWithCloud(provider),
+    signOut: () => signOutCloud(),
+    syncNow: () => flushCloudSync(true),
+    getState: () => ({
+      configured: cloudConfigurationReady(),
+      signedIn: Boolean(cloudUser?.id),
+      userId: cloudUser?.id || "",
+      ready: cloudReady,
+      revision: cloudRevision,
+      providers: { ...cloudProviders }
+    })
+  });
+
   function displayName(value) {
     return cleanName(value).replace(/\s*\([^)]*\)\s*/g, " ").trim() || cleanName(value);
   }
@@ -558,6 +1454,7 @@
   function updateUrl(includeMessage = Boolean(sharedMessage)) {
     const url = new URL(location.href);
     url.searchParams.delete(BETA_PARAMETER);
+    AUTH_CALLBACK_PARAMETERS.forEach(key => url.searchParams.delete(key));
     if (fromName) url.searchParams.set("from", fromName); else url.searchParams.delete("from");
     if (toName) url.searchParams.set("to", toName); else url.searchParams.delete("to");
     if (lang === "ru") url.searchParams.delete("lang"); else url.searchParams.set("lang", lang);
@@ -568,7 +1465,8 @@
     history.replaceState({}, "", url);
   }
 
-  function setNames(sender, recipient) {
+  function setNames(sender, recipient, { persist = true, explicit = false } = {}) {
+    if (persist && explicit) linkNamesActive = false;
     fromName = cleanName(sender);
     toName = cleanName(recipient);
     const fromDisplay = displayName(fromName);
@@ -581,8 +1479,10 @@
     if ($("#aiRecipientName")) $("#aiRecipientName").value = toName;
     if ($("#settingsSenderName")) $("#settingsSenderName").value = fromName;
     if ($("#settingsRecipientName")) $("#settingsRecipientName").value = toName;
-    if (fromName) localStorage.setItem("nurFrom", fromName); else localStorage.removeItem("nurFrom");
-    if (toName) localStorage.setItem("nurTo", toName); else localStorage.removeItem("nurTo");
+    if (persist) {
+      if (fromName) localStorage.setItem("nurFrom", fromName); else localStorage.removeItem("nurFrom");
+      if (toName) localStorage.setItem("nurTo", toName); else localStorage.removeItem("nurTo");
+    }
     applyLanguage(false);
     updateUrl();
   }
@@ -667,13 +1567,16 @@
     setText("#settingsTitle", t("settings")); setText(".settings-panel .panel-eyebrow", t("settingsEyebrow")); setText(".language-picker legend", t("langLabel")); setText("#customBackgroundButton", t("choosePhoto")); setText("#resetBackgroundButton", t("resetPhoto"));
     setText(".profile-picker legend", t("namesSettings")); const settingsNameLabels = $$(".profile-picker .simple-form label > span"); if (settingsNameLabels[0]) settingsNameLabels[0].textContent = t("fromWho"); if (settingsNameLabels[1]) settingsNameLabels[1].textContent = t("forWho"); $("#settingsSenderName").placeholder = t("setupSenderPlaceholder"); $("#settingsRecipientName").placeholder = t("setupRecipientPlaceholder"); setText("#settingsNamesError", t("namesSafety"));
     setText("#rainToggle strong", t("rainTitle")); setText("#rainToggle small", t("rainNote")); setText("#natureToggle strong", t("natureTitle")); setText("#natureToggle small", t("natureNote")); setText("#weatherToggle strong", t("weatherTitle")); setText("#weatherToggle small", t("weatherNote")); setText("#fullscreenToggle strong", t("fullscreenTitle")); setText("#fullscreenToggle small", t("fullscreenNote"));
-    setText("#rainToggle b", rainScene.enabled ? t("stateOn") : t("stateOff")); setText("#natureToggle b", isNaturePlaying ? t("stateOn") : t("stateOff")); if (!$("#weatherState").textContent.includes("°")) setText("#weatherState", weatherEnabled ? t("stateOn") : t("stateOff")); updateFullscreenControl(); setText("#saveSettingsButton", t("saveSettings"));
+    const naturePreferenceEnabled = isNaturePlaying || localStorage.getItem("nurNature") === "on";
+    $("#natureToggle").classList.toggle("is-active", naturePreferenceEnabled); $("#weatherToggle").classList.toggle("is-active", weatherEnabled);
+    setText("#rainToggle b", rainScene.enabled ? t("stateOn") : t("stateOff")); setText("#natureToggle b", naturePreferenceEnabled ? t("stateOn") : t("stateOff")); if (!$("#weatherState").textContent.includes("°")) setText("#weatherState", weatherEnabled ? t("stateOn") : t("stateOff")); updateFullscreenControl(); setText("#saveSettingsButton", t("saveSettings"));
     setText(".background-picker legend", t("personalBg")); setText(".background-preview strong", t("ownPhoto")); setText(".background-preview small", t("localOnly")); setText(".track-picker legend", t("music")); setText("#customTrackButton strong", t("customMusic")); if (!customAudioBlob) setText("#customTrackName", t("customMusicNote"));
     const trackNotes = $$(".track-option[data-track] small"); if (trackNotes[0]) trackNotes[0].textContent = t("trackPrimary"); if (trackNotes[1]) trackNotes[1].textContent = t("trackLight"); if (trackNotes[2]) trackNotes[2].textContent = t("trackWarm");
     setText(".premium-mini", t("fullVersion")); setText(".premium-settings-card h3", t("allLetters")); setText(".premium-settings-card p", t("onePurchase")); $("#settingsPurchase").innerHTML = `${escapeHtml(t("buy"))} <span class="price-label">${escapeHtml(premiumPrice)}</span>`;
     setText(".paywall-card > .panel-eyebrow", t("paywallEyebrow")); $("#paywallTitle").innerHTML = t("paywallTitle"); setText(".paywall-card > p", t("paywallBody")); const benefits=$$(".paywall-card li"); if(benefits[0])benefits[0].textContent=t("benefit1");if(benefits[1])benefits[1].textContent=t("benefit2");if(benefits[2])benefits[2].textContent=t("benefit3");if(benefits[3])benefits[3].textContent=t("benefit4"); setText("#purchaseButton > span", t("payButton")); setText(".paywall-card > small", t("storeNote"));
     const legalLinks=$$(".legal-links a");if(legalLinks[0])legalLinks[0].textContent=t("privacy");if(legalLinks[1])legalLinks[1].textContent=t("supportLink");
     setText("#restoreButton", t("restore")); setText("#installButton", `＋ ${t("install")}`); $$(".price-label").forEach(label => label.textContent = premiumPrice);
+    renderCloudAccount();
     $("#homeButton").setAttribute("aria-label", t("homeAria")); $("#soundButton").setAttribute("aria-label", t(isMusicPlaying ? "soundOffAria" : "soundOnAria")); $("#natureButton").setAttribute("aria-label", t(isNaturePlaying ? "natureOffAria" : "natureOnAria")); $("#weatherButton").setAttribute("aria-label", t("weatherAria")); $("#languageButton").setAttribute("aria-label", t("languageAria")); $("#libraryButton").setAttribute("aria-label", t("libraryAria")); $("#settingsButton").setAttribute("aria-label", t("settingsAria")); $("#previousLetter").setAttribute("aria-label", t("previousAria")); $("#shareButton").setAttribute("aria-label", t("shareAria"));
     $("#homeScreen").setAttribute("aria-label", t("homeScreenAria")); $(".letter-actions").setAttribute("aria-label", t("letterNavAria")); $(".ai-mode-tabs").setAttribute("aria-label", t("aiModeAria")); $("#generatedText").setAttribute("aria-label", t("generatedLetterAria")); $("#replyGeneratedText").setAttribute("aria-label", t("generatedReplyAria"));
     $("#setupBackdrop").setAttribute("aria-label", t("closeAria")); $("#setupClose").setAttribute("aria-label", t("closeAria")); $("#aiBackdrop").setAttribute("aria-label", t("closeEditorAria")); $("#aiClose").setAttribute("aria-label", t("closeEditorAria")); $("#libraryBackdrop").setAttribute("aria-label", t("closeLibraryAria")); $("#libraryClose").setAttribute("aria-label", t("closeLibraryAria")); $("#settingsBackdrop").setAttribute("aria-label", t("closeSettingsAria")); $("#settingsClose").setAttribute("aria-label", t("closeSettingsAria")); $("#paywallBackdrop").setAttribute("aria-label", t("closeAria")); $("#paywallClose").setAttribute("aria-label", t("closeAria"));
@@ -712,7 +1615,7 @@
       $("#setupError").hidden = false;
       return;
     }
-    setNames(sender, recipient);
+    setNames(sender, recipient, { explicit: true });
     closePanel(layers.setup);
     openStory();
   }
@@ -765,6 +1668,7 @@
     $("#favoriteButton").textContent = `${favorite ? "♥" : "♡"} ${favorite ? t("favorite") : t("saved")}`;
     if (!entry.shared) localStorage.setItem("nurLetterIndex", String(entry.id));
     updateUrl(Boolean(entry.shared));
+    scheduleCloudSync();
   }
 
   function moveLetter(direction) {
@@ -862,7 +1766,7 @@
     const tone = LETTER_TONES.has($("#aiTone").value) ? $("#aiTone").value : "auto";
     const relationship = resolveRelationship(sender, recipient, selectedRelationship);
     if (tone === "romantic" && relationship !== "spouse") return showSafety(t("romanticSpouseOnly"));
-    setNames(sender, recipient);
+    setNames(sender, recipient, { explicit: true });
     $("#safetyMessage").hidden = true;
     $("#generatedCard").hidden = true;
     $("#generationStatus").hidden = false;
@@ -984,7 +1888,7 @@
     const relationship = resolveRelationship(sender, recipient, selectedRelationship);
     if (!value || value.length < 12 || containsForbidden(value) || containsImproperRomance(value, relationship)) return showSafety(t("safety"));
     if (!sender || !recipient || containsForbidden(sender) || containsForbidden(recipient)) return showSafety(t("namesSafety"));
-    setNames(sender, recipient);
+    setNames(sender, recipient, { explicit: true });
     sharedMessage = value;
     letterDeck = [{ id: "shared", category: "warm", shared: true, ru: value, en: value, fr: value }, ...LETTERS];
     currentIndex = 0;
@@ -1118,7 +2022,7 @@
     }
     resize() { const dpr = Math.min(devicePixelRatio || 1, 1.5); this.width = innerWidth; this.height = innerHeight; this.canvas.width = Math.round(this.width * dpr); this.canvas.height = Math.round(this.height * dpr); this.canvas.style.width = `${this.width}px`; this.canvas.style.height = `${this.height}px`; this.ctx.setTransform(dpr,0,0,dpr,0,0); const count = Math.max(18, Math.min(54, Math.round(this.width / 24))); this.drops = Array.from({ length: count }, () => this.makeDrop(true)); }
     makeDrop(randomY = false) { return { x: Math.random() * (this.width + 240) - 120, y: randomY ? Math.random() * this.height : -60, length: 22 + Math.random() * 43, speed: 7 + Math.random() * 9, width: 1.1 + Math.random() * 1.7, alpha: .11 + Math.random() * .28, drift: 1.5 + Math.random() * 2.7 }; }
-    setEnabled(enabled, persist = true) { this.enabled = Boolean(enabled); this.canvas.classList.toggle("is-off", !this.enabled); $("#rainToggle").classList.toggle("is-active", this.enabled); $("#rainToggle b").textContent = this.enabled ? t("stateOn") : t("stateOff"); if (persist) localStorage.setItem("nurRain", this.enabled ? "on" : "off"); if (this.enabled) this.start(); else { cancelAnimationFrame(this.frame); this.ctx.clearRect(0,0,this.width,this.height); } }
+    setEnabled(enabled, persist = true) { this.enabled = Boolean(enabled); this.canvas.classList.toggle("is-off", !this.enabled); $("#rainToggle").classList.toggle("is-active", this.enabled); $("#rainToggle b").textContent = this.enabled ? t("stateOn") : t("stateOff"); if (persist) { localStorage.setItem("nurRain", this.enabled ? "on" : "off"); scheduleCloudSync(); } if (this.enabled) this.start(); else { cancelAnimationFrame(this.frame); this.ctx.clearRect(0,0,this.width,this.height); } }
     setIntensity(value) { this.intensity = Math.max(.2, Math.min(1, value)); }
     start() { cancelAnimationFrame(this.frame); this.draw(); }
     draw() { if (!this.enabled || document.hidden) return; const ctx = this.ctx; ctx.clearRect(0,0,this.width,this.height); ctx.lineCap = "round"; for (let i=0;i<this.drops.length * this.intensity;i++) { const drop=this.drops[i]; const gradient=ctx.createLinearGradient(drop.x,drop.y,drop.x+drop.drift,drop.y+drop.length); gradient.addColorStop(0,"rgba(220,236,245,0)"); gradient.addColorStop(1,`rgba(221,239,248,${drop.alpha})`); ctx.strokeStyle=gradient;ctx.lineWidth=drop.width;ctx.beginPath();ctx.moveTo(drop.x,drop.y);ctx.lineTo(drop.x+drop.drift,drop.y+drop.length);ctx.stroke();drop.x+=drop.drift;drop.y+=drop.speed;if(drop.y>this.height-5){if(Math.random()<.24)this.splashes.push({x:drop.x,y:this.height-4,r:1,a:.35});this.drops[i]=this.makeDrop(false);} }
@@ -1141,10 +2045,12 @@
     isNaturePlaying = Boolean(enabled);
     $("#natureButton").classList.toggle("is-playing", isNaturePlaying); $("#natureButton").setAttribute("aria-pressed", String(isNaturePlaying)); $("#natureButton").setAttribute("aria-label", t(isNaturePlaying ? "natureOffAria" : "natureOnAria")); $("#natureToggle").classList.toggle("is-active", isNaturePlaying); $("#natureToggle b").textContent = isNaturePlaying ? t("stateOn") : t("stateOff");
     if (isNaturePlaying) nature.start().catch(() => {}); else nature.stop();
+    localStorage.setItem("nurNature", isNaturePlaying ? "on" : "off");
+    scheduleCloudSync();
     if (announce) showToast(isNaturePlaying ? t("natureOn") : t("natureOff"));
   }
 
-  function toggleNature() { setNaturePlaying(!isNaturePlaying); }
+  function toggleNature() { setNaturePlaying(!(isNaturePlaying || localStorage.getItem("nurNature") === "on")); }
 
   function createAtmosphere() {
     const colors=["#b7634b","#d48a59","#d59aa8","#8c684c","#d6a75c"];
@@ -1158,7 +2064,7 @@
   async function setAudioSource(index) { if(currentAudioUrl)URL.revokeObjectURL(currentAudioUrl);const blob=index===3?customAudioBlob:await getBuiltinBlob(index);if(!blob)throw new Error("Choose audio first");currentAudioUrl=URL.createObjectURL(blob);audio.src=currentAudioUrl;audio.load(); }
   async function playMusic(quiet=false) { try{if(!audio.src)await setAudioSource(selectedTrack);await audio.play();isMusicPlaying=true;$("#soundButton").classList.add("is-playing");$("#soundButton").setAttribute("aria-pressed","true");$("#soundButton").setAttribute("aria-label",t("soundOffAria"));}catch{if(!quiet)showToast("Tap again to start audio");} }
   function pauseMusic(){audio.pause();isMusicPlaying=false;$("#soundButton").classList.remove("is-playing");$("#soundButton").setAttribute("aria-pressed","false");$("#soundButton").setAttribute("aria-label",t("soundOnAria"));}
-  async function selectTrack(index){const resume=isMusicPlaying;selectedTrack=index;localStorage.setItem("nurTrack",String(index));$$('.track-option').forEach(option=>option.classList.toggle("is-active",Number(option.dataset.track)===index||(index===3&&option.id==="customTrackButton")));audio.pause();audio.removeAttribute("src");audio.load();try{await setAudioSource(index);if(resume)await playMusic();showToast(index===3?$("#customTrackName").textContent:tracks[index].name);}catch(error){showToast(error.message);} }
+  async function selectTrack(index){const resume=isMusicPlaying;selectedTrack=index;localStorage.setItem("nurTrack",String(index));if(index>=0&&index<=2){cloudBuiltInTrack=index;localStorage.setItem("nurLastBuiltInTrack",String(index));scheduleCloudSync();}$$('.track-option').forEach(option=>option.classList.toggle("is-active",Number(option.dataset.track)===index||(index===3&&option.id==="customTrackButton")));audio.pause();audio.removeAttribute("src");audio.load();try{await setAudioSource(index);if(resume)await playMusic();showToast(index===3?$("#customTrackName").textContent:tracks[index].name);}catch(error){showToast(error.message);} }
 
   function openMediaDb(){return new Promise((resolve,reject)=>{const request=indexedDB.open("nur-letter-media",1);request.onupgradeneeded=()=>request.result.createObjectStore("assets");request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
   async function saveMedia(key,value){const db=await openMediaDb();await new Promise((resolve,reject)=>{const tx=db.transaction("assets","readwrite");tx.objectStore("assets").put(value,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}
@@ -1171,14 +2077,14 @@
   async function resetBackground(){try{await saveMedia("background",null);}catch{}if(backgroundUrl)URL.revokeObjectURL(backgroundUrl);if(mobileBackgroundUrl&&mobileBackgroundUrl!==backgroundUrl)URL.revokeObjectURL(mobileBackgroundUrl);backgroundUrl="";mobileBackgroundUrl="";customBackgroundBlob=null;document.documentElement.style.removeProperty("--scene-image");document.documentElement.style.removeProperty("--mobile-scene-image");document.body.classList.remove("has-custom-background");$("#backgroundPreview").style.backgroundImage="";await setupBackground();showToast(t("photoReset"));}
 
   const weatherMap={0:["☀","Clear"],1:["◐","Mostly clear"],2:["☁","Cloudy"],3:["☁","Overcast"],45:["≋","Fog"],48:["≋","Fog"],51:["☂","Drizzle"],53:["☂","Drizzle"],55:["☂","Drizzle"],61:["☂","Rain"],63:["☂","Rain"],65:["☂","Heavy rain"],71:["❄","Snow"],73:["❄","Snow"],75:["❄","Snow"],80:["☂","Showers"],81:["☂","Showers"],82:["☂","Showers"],95:["ϟ","Storm"]};
-  async function enableWeather(){if(!navigator.geolocation){showToast(t("weatherFail"));return;}$("#weatherText").textContent="…";navigator.geolocation.getCurrentPosition(async position=>{try{const {latitude,longitude}=position.coords;const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(3)}&longitude=${longitude.toFixed(3)}&current=temperature_2m,weather_code,is_day&timezone=auto`;const response=await fetch(url);if(!response.ok)throw new Error();const data=await response.json();const code=Number(data.current?.weather_code||0);const weather=weatherMap[code]||["◐","Weather"];$("#weatherIcon").textContent=weather[0];$("#weatherText").textContent=`${Math.round(data.current.temperature_2m)}°`;weatherEnabled=true;localStorage.setItem("nurWeather","on");$("#weatherToggle").classList.add("is-active");$("#weatherState").textContent=`${Math.round(data.current.temperature_2m)}°`;if([51,53,55,61,63,65,80,81,82,95].includes(code)){rainScene.setEnabled(true);rainScene.setIntensity(code>=63?1:.75);}document.body.dataset.weather=String(code);}catch{showToast(t("weatherFail"));$("#weatherText").textContent=t("weather");}},()=>{showToast(t("locationDenied"),3300);$("#weatherText").textContent=t("weather");},{enableHighAccuracy:false,timeout:9000,maximumAge:30*60*1000});}
+  async function enableWeather(){if(!navigator.geolocation){showToast(t("weatherFail"));return;}$("#weatherText").textContent="…";navigator.geolocation.getCurrentPosition(async position=>{try{const {latitude,longitude}=position.coords;const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(3)}&longitude=${longitude.toFixed(3)}&current=temperature_2m,weather_code,is_day&timezone=auto`;const response=await fetch(url);if(!response.ok)throw new Error();const data=await response.json();const code=Number(data.current?.weather_code||0);const weather=weatherMap[code]||["◐","Weather"];$("#weatherIcon").textContent=weather[0];$("#weatherText").textContent=`${Math.round(data.current.temperature_2m)}°`;weatherEnabled=true;localStorage.setItem("nurWeather","on");$("#weatherToggle").classList.add("is-active");$("#weatherState").textContent=`${Math.round(data.current.temperature_2m)}°`;if([51,53,55,61,63,65,80,81,82,95].includes(code)){rainScene.setEnabled(true);rainScene.setIntensity(code>=63?1:.75);}document.body.dataset.weather=String(code);scheduleCloudSync();}catch{showToast(t("weatherFail"));$("#weatherText").textContent=t("weather");}},()=>{showToast(t("locationDenied"),3300);$("#weatherText").textContent=t("weather");},{enableHighAccuracy:false,timeout:9000,maximumAge:30*60*1000});}
 
   async function generatePostcard(){const entry=currentEntry();if(!canAccess(entry))return openPaywall();const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1920;const ctx=canvas.getContext("2d");const image=new Image();image.src=backgroundUrl||"assets/campfire-lake.png";try{await image.decode();const scale=Math.max(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight);const w=image.naturalWidth*scale,h=image.naturalHeight*scale;ctx.drawImage(image,(canvas.width-w)/2,(canvas.height-h)/2,w,h);}catch{ctx.fillStyle="#302335";ctx.fillRect(0,0,canvas.width,canvas.height);}const gradient=ctx.createLinearGradient(0,0,0,canvas.height);gradient.addColorStop(0,"rgba(20,18,28,.3)");gradient.addColorStop(.42,"rgba(26,19,28,.46)");gradient.addColorStop(1,"rgba(15,11,18,.88)");ctx.fillStyle=gradient;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#f1b8cb";ctx.font="700 24px system-ui";ctx.letterSpacing="6px";ctx.fillText("GLOWLETTER",90,130);ctx.fillStyle="#fff8ed";ctx.font="600 66px Georgia";ctx.fillText(`${t("for")} ${displayName(toName)}`,90,270);ctx.strokeStyle="rgba(255,238,229,.38)";ctx.beginPath();ctx.moveTo(90,316);ctx.lineTo(990,316);ctx.stroke();ctx.fillStyle="#fffaf2";ctx.font="600 55px Georgia";wrapCanvasText(ctx,entryText(entry),90,440,900,78);ctx.fillStyle="#f0c5d3";ctx.font="italic 600 49px Georgia";ctx.textAlign="right";ctx.fillText(`${t("from")} ${displayName(fromName)}`,990,1765);ctx.textAlign="left";const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png",.95));const file=new File([blob],"glow-letter.png",{type:"image/png"});try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:t("title")});return;}}catch(error){if(error.name==="AbortError")return;}const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="glow-letter.png";link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);showToast(t("downloadReady"));}
   function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight){const words=text.split(/\s+/);let line="";let currentY=y;for(const word of words){const test=`${line}${word} `;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line.trim(),x,currentY);line=`${word} `;currentY+=lineHeight;if(currentY>1570)break;}else line=test;}if(line&&currentY<=1570)ctx.fillText(line.trim(),x,currentY);}
 
   function speakLetter(){if(!("speechSynthesis" in window))return;const button=$("#speakButton");if(speechSynthesis.speaking){speechSynthesis.cancel();button.textContent=`◖ ${t("read")}`;return;}const utterance=new SpeechSynthesisUtterance(entryText(currentEntry()));utterance.lang=lang==="ru"?"ru-RU":lang==="fr"?"fr-FR":"en-US";utterance.rate=.9;utterance.pitch=1;utterance.onend=()=>button.textContent=`◖ ${t("read")}`;button.textContent=`■ ${t("stop")}`;speechSynthesis.speak(utterance);}
 
-  function toggleFavorite(){const entry=currentEntry();const key=String(entry.id);if(favorites.has(key))favorites.delete(key);else favorites.add(key);localStorage.setItem("nurFavorites",JSON.stringify([...favorites]));renderLetter();haptic();}
+  function toggleFavorite(){const entry=currentEntry();const key=String(entry.id);if(favorites.has(key))favorites.delete(key);else favorites.add(key);localStorage.setItem("nurFavorites",JSON.stringify([...favorites]));renderLetter();scheduleCloudSync();haptic();}
 
   function shareLetter(){const entry=currentEntry();const url=new URL(location.href);url.searchParams.delete(BETA_PARAMETER);url.searchParams.set("from",fromName);url.searchParams.set("to",toName);url.searchParams.set("lang",lang);url.searchParams.set("msg",encodeSharedMessage(entryText(entry)));url.searchParams.delete("quote");const data={title:t("title"),text:`${displayName(toName)}, ${t("shareText")} — ${displayName(fromName)} ♡`,url:url.toString()};if(navigator.share)navigator.share(data).catch(()=>{});else copyText(url.toString());}
 
@@ -1191,8 +2097,8 @@
     const namesInvalid = Boolean(sender || recipient) && (!sender || !recipient || containsForbidden(sender) || containsForbidden(recipient));
     $("#settingsNamesError").hidden = !namesInvalid;
     if (namesInvalid) return;
-    setNames(sender, recipient);
-    localStorage.setItem("nurLanguage",lang);localStorage.setItem("nurRain",rainScene.enabled?"on":"off");localStorage.setItem("nurWeather",weatherEnabled?"on":"off");localStorage.setItem("nurTrack",String(selectedTrack));localStorage.setItem("nurNature",isNaturePlaying?"on":"off");localStorage.setItem("nurFullscreen",document.fullscreenElement?"on":"off");showToast(t("settingsSaved"));closePanel(layers.settings);
+    setNames(sender, recipient, { explicit: true });
+    localStorage.setItem("nurLanguage",lang);localStorage.setItem("nurRain",rainScene.enabled?"on":"off");localStorage.setItem("nurWeather",weatherEnabled?"on":"off");localStorage.setItem("nurTrack",String(selectedTrack));localStorage.setItem("nurNature",isNaturePlaying?"on":"off");localStorage.setItem("nurFullscreen",document.fullscreenElement?"on":"off");localStorage.setItem("nurVolume",String(audio.volume));scheduleCloudSync({includeNames:true,immediate:true});showToast(t("settingsSaved"));closePanel(layers.settings);
   }
 
   function bindEvents(){
@@ -1209,25 +2115,30 @@
     $("#ownTextToggle").addEventListener("click",()=>{const editor=$("#ownTextEditor");editor.hidden=!editor.hidden;$("#ownTextToggle").classList.toggle("is-open",!editor.hidden);});$("#useOwnText").addEventListener("click",()=>usePersonalText($("#ownText").value));
     $("#categoryRow").addEventListener("click",event=>{const button=event.target.closest("[data-category]");if(!button)return;selectedCategory=button.dataset.category;$$("#categoryRow button").forEach(item=>item.classList.toggle("is-active",item===button));renderLibrary();});
     $("#quoteList").addEventListener("click",event=>{const action=event.target.closest("[data-action]");const card=event.target.closest(".quote-card");if(!action||!card)return;const id=Number(card.dataset.id);if(action.dataset.action==="unlock")openPaywall();else if(action.dataset.action==="open")openQuoteById(id);else if(action.dataset.action==="copy"){const entry=LETTERS.find(item=>Number(item.id)===id);if(canAccess(entry))copyText(entryText(entry));else openPaywall();}});
-    $("#languageButton").addEventListener("click",()=>{const order=["ru","en","fr"];lang=order[(order.indexOf(lang)+1)%order.length];applyLanguage();});$$('[data-lang]').forEach(button=>button.addEventListener("click",()=>{lang=button.dataset.lang;applyLanguage();}));
+    $("#languageButton").addEventListener("click",()=>{const order=["ru","en","fr"];lang=order[(order.indexOf(lang)+1)%order.length];applyLanguage();scheduleCloudSync();});$$('[data-lang]').forEach(button=>button.addEventListener("click",()=>{lang=button.dataset.lang;applyLanguage();scheduleCloudSync();}));
     $("#rainToggle").addEventListener("click",()=>{rainScene.setEnabled(!rainScene.enabled);showToast(rainScene.enabled?t("rainOn"):t("rainOff"));});$("#natureButton").addEventListener("click",toggleNature);$("#natureToggle").addEventListener("click",toggleNature);$("#weatherButton").addEventListener("click",enableWeather);$("#weatherToggle").addEventListener("click",enableWeather);$("#fullscreenToggle").addEventListener("click",toggleFullscreen);
     $("#soundButton").addEventListener("click",()=>isMusicPlaying?pauseMusic():playMusic());$$('[data-track]').forEach(button=>button.addEventListener("click",()=>selectTrack(Number(button.dataset.track))));$("#customTrackButton").addEventListener("click",()=>$("#customTrackInput").click());$("#customTrackInput").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;if(file.size>35*1024*1024)return showToast("Max 35 MB");customAudioBlob=file;$("#customTrackName").textContent=file.name;try{await saveMedia("audio",{blob:file,name:file.name});}catch{}await selectTrack(3);});
     $("#customBackgroundButton").addEventListener("click",()=>$("#customBackgroundInput").click());$("#customBackgroundInput").addEventListener("change",async event=>{const file=event.target.files?.[0];if(!file)return;if(file.size>18*1024*1024)return showToast("Max 18 MB");try{const blob=await optimizeBackground(file);applyBackground(blob);await saveMedia("background",{blob});showToast(t("photoReady"));}catch{showToast(t("weatherFail"));}});$("#resetBackgroundButton").addEventListener("click",resetBackground);
     $("#installButton").addEventListener("click",async()=>{if(!deferredInstallPrompt)return;deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;$("#installButton").hidden=true;});
+    $("#googleSignIn").addEventListener("click",()=>signInWithCloud("google"));$("#facebookSignIn").addEventListener("click",()=>signInWithCloud("facebook"));$("#accountSignOut").addEventListener("click",signOutCloud);
     document.addEventListener("keydown",event=>{if(event.key==="Escape"){pendingPremiumFeature="";const open=Object.values(layers).reverse().find(layer=>layer.classList.contains("is-open"));if(open===layers.paywall)closePaywall();else if(open)closePanel(open);}if(storyOpened&&!Object.values(layers).some(layer=>layer.classList.contains("is-open"))){if(event.key==="ArrowRight")moveLetter(1);if(event.key==="ArrowLeft")moveLetter(-1);}});
     addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;$("#installButton").hidden=false;});
-    document.addEventListener("fullscreenchange",updateFullscreenControl);
+    document.addEventListener("fullscreenchange",()=>{updateFullscreenControl();localStorage.setItem("nurFullscreen",document.fullscreenElement?"on":"off");scheduleCloudSync();});
+    document.addEventListener("visibilitychange",()=>{if(document.hidden)flushCloudSync(false);});
+    addEventListener("online",()=>{detectCloudProviders();if(cloudUser?.id){if(cloudReady)flushCloudSync(false);else loadCloudProgress(cloudUser);}});
+    addEventListener("offline",()=>setCloudStatus("cloudOffline"));
     addEventListener("nur-entitlement",event=>{if(!trustedEntitlementSource)return;const data=event.detail||{};updatePremium(data.entitled??data.owned??false,data.priceLabel||data.price,data.reason);updatePurchaseConfiguration(data.purchaseConfigured);});
     addEventListener("pointermove",event=>{if(innerWidth<900||matchMedia("(prefers-reduced-motion: reduce)").matches)return;const x=(event.clientX/innerWidth-.5)*1.2;const y=(event.clientY/innerHeight-.5)*.8;$("#cinematicBg").style.translate=`${x}% ${y}%`;},{passive:true});
   }
 
   async function init(){
     if(LETTERS.length!==50)console.warn(`Expected 50 letters, received ${LETTERS.length}`);
-    audio.volume=Number(localStorage.getItem("nurVolume")||.62);
+    const storedVolume=Number(localStorage.getItem("nurVolume")||.62);audio.volume=Number.isFinite(storedVolume)?Math.max(0,Math.min(storedVolume,1)):.62;
     await initializeBetaAccess();
-    bindEvents();setNames(fromName,toName);applyLanguage();renderLibrary();requestNativeEntitlement();
+    initializeCloudAuth().catch(()=>setCloudStatus("cloudUnavailable"));
+    bindEvents();setNames(fromName,toName,{persist:!linkNamesActive,explicit:false});applyLanguage();renderLibrary();requestNativeEntitlement();
     if("serviceWorker" in navigator&&location.protocol.startsWith("http")&&location.hostname!=="appassets.androidplatform.net"){
-      const registerServiceWorker=()=>navigator.serviceWorker.register("sw.js?v=8").catch(()=>{});
+      const registerServiceWorker=()=>navigator.serviceWorker.register("sw.js?v=9").catch(()=>{});
       if(document.readyState==="complete")registerServiceWorker();else addEventListener("load",registerServiceWorker,{once:true});
     }
     try{const savedAudio=await loadMedia("audio");if(savedAudio?.blob){customAudioBlob=savedAudio.blob;$("#customTrackName").textContent=savedAudio.name||"Custom audio";}else if(selectedTrack===3)selectedTrack=0;}catch{if(selectedTrack===3)selectedTrack=0;}

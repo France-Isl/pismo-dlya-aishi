@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -40,6 +41,8 @@ public final class MainActivity extends Activity {
     private GeolocationPermissions.Callback geolocationCallback;
     private String geolocationOrigin;
     private BillingManager billingManager;
+    private boolean trustedMainDocumentReady;
+    private String pendingAuthCallbackUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,7 @@ public final class MainActivity extends Activity {
         billingManager = new BillingManager(this, this::dispatchEntitlementToWeb);
         configureWebView();
         billingManager.start();
+        captureAuthCallback(getIntent());
         webView.loadUrl(APP_URL);
     }
 
@@ -120,11 +124,19 @@ public final class MainActivity extends Activity {
             }
 
             @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                trustedMainDocumentReady = false;
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 if (isTrustedAppDocumentUrl(url)) {
                     billingManager.notifyWebState();
                 }
+                trustedMainDocumentReady = isTrustedAppMainDocumentUrl(url);
+                dispatchPendingAuthCallback();
             }
         });
 
@@ -183,12 +195,15 @@ public final class MainActivity extends Activity {
         });
 
         webView.addJavascriptInterface(new BillingBridge(this, billingManager), "NurBilling");
+        webView.addJavascriptInterface(new AuthBridge(this), "NurAuth");
     }
 
     private boolean isTrustedAppUri(Uri uri) {
         return uri != null
                 && "https".equalsIgnoreCase(uri.getScheme())
-                && APP_ORIGIN_HOST.equalsIgnoreCase(uri.getHost());
+                && APP_ORIGIN_HOST.equalsIgnoreCase(uri.getHost())
+                && uri.getUserInfo() == null
+                && uri.getPort() == -1;
     }
 
     private boolean isTrustedAppDocumentUri(Uri uri) {
@@ -202,6 +217,74 @@ public final class MainActivity extends Activity {
 
     private boolean isTrustedAppDocumentUrl(String url) {
         return url != null && isTrustedAppDocumentUri(Uri.parse(url));
+    }
+
+    private boolean isTrustedAppMainDocumentUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        Uri uri = Uri.parse(url);
+        return isTrustedAppUri(uri) && "/assets/web/index.html".equals(uri.getPath());
+    }
+
+    void openAuthorizeUrlFromWeb(String url) {
+        if (!trustedMainDocumentReady
+                || webView == null
+                || !isTrustedAppMainDocumentUrl(webView.getUrl())
+                || !AuthUrlPolicy.isAllowedAuthorizeUrl(url)) {
+            return;
+        }
+        try {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            browserIntent.addCategory(Intent.CATEGORY_BROWSABLE);
+            startActivity(browserIntent);
+        } catch (ActivityNotFoundException ignored) {
+            // Keep the trusted local page in place if no browser can handle HTTPS.
+        }
+    }
+
+    private void captureAuthCallback(Intent intent) {
+        if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) {
+            return;
+        }
+        String callbackUrl = intent.getDataString();
+        if (!AuthUrlPolicy.isAllowedCallbackUrl(callbackUrl)) {
+            return;
+        }
+        pendingAuthCallbackUrl = callbackUrl;
+        // The authorization code is single-use. Do not leave it attached to the
+        // Activity's long-lived Intent after copying it into the in-memory handoff.
+        intent.setData(null);
+        dispatchPendingAuthCallback();
+    }
+
+    private void dispatchPendingAuthCallback() {
+        WebView target = webView;
+        String callbackUrl = pendingAuthCallbackUrl;
+        if (target == null
+                || callbackUrl == null
+                || !AuthUrlPolicy.isAllowedCallbackUrl(callbackUrl)
+                || !trustedMainDocumentReady
+                || !isTrustedAppMainDocumentUrl(target.getUrl())) {
+            return;
+        }
+
+        String callbackJson = JSONObject.quote(callbackUrl);
+        String script = "(function(){"
+                + "var u=" + callbackJson + ";"
+                + "if(typeof window.onNativeAuthCallback==='function'){window.onNativeAuthCallback(u);}"
+                + "else{window.__nurPendingAuthCallback=u;}"
+                + "window.dispatchEvent(new CustomEvent('nur-auth-callback',{detail:{url:u}}));"
+                + "})();";
+        pendingAuthCallbackUrl = null;
+        target.evaluateJavascript(script, null);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        captureAuthCallback(intent);
     }
 
     private boolean hasLocationPermission() {
@@ -319,6 +402,7 @@ public final class MainActivity extends Activity {
         }
         if (webView != null) {
             webView.removeJavascriptInterface("NurBilling");
+            webView.removeJavascriptInterface("NurAuth");
             webView.stopLoading();
             webView.destroy();
             webView = null;

@@ -1,19 +1,20 @@
-const CACHE = "glow-letter-v8";
+const CACHE = "glow-letter-v9";
 const CORE = [
   "./",
   "index.html",
-  "styles.css?v=8",
-  "config.js?v=8",
-  "letters.js?v=8",
-  "app.js?v=8",
-  "manifest.webmanifest?v=8",
+  "styles.css?v=9",
+  "config.js?v=9",
+  "vendor/supabase-2.110.9.js?v=9",
+  "letters.js?v=9",
+  "app.js?v=9",
+  "manifest.webmanifest?v=9",
   "icon.svg",
   "privacy.html",
   "assets/campfire-lake.png",
   "assets/campfire-mobile.png"
 ];
-const CORE_FILES = new Set(["", "index.html", "styles.css", "config.js", "letters.js", "app.js", "manifest.webmanifest"]);
-const SENSITIVE_NAVIGATION_PARAMS = ["beta", "access", "code", "error", "error_code", "error_description"];
+const CORE_FILES = new Set(["", "index.html", "styles.css", "config.js", "supabase-2.110.9.js", "letters.js", "app.js", "manifest.webmanifest"]);
+const SENSITIVE_NAVIGATION_PARAMS = ["beta", "access", "code", "state", "error", "error_code", "error_description", "error_reason", "error_uri", "access_token", "refresh_token", "expires_in", "expires_at", "token_type", "provider_token", "provider_refresh_token"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
