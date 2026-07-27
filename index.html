@@ -12,12 +12,12 @@
   <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/campfire-lake.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <title>GlowLetter · Тёплые слова</title>
-  <link rel="manifest" href="manifest.webmanifest?v=5" />
+  <link rel="manifest" href="manifest.webmanifest?v=6" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <div class="app" id="app">
@@ -56,9 +56,12 @@
           <p class="sender-line" hidden></p>
           <button class="seal-button" id="openStoryButton" type="button">
             <span class="seal-mark" aria-hidden="true">♡</span>
-            <span>Создать своё письмо</span>
+            <span>Открыть письмо</span>
           </button>
-          <button class="smart-link" id="aiOpenHome" type="button" hidden><span>✦</span> Создать своё письмо</button>
+          <div class="home-smart-actions">
+            <button class="smart-link" id="aiOpenHome" type="button"><span>✦</span> Создать своё письмо <b>PRO</b></button>
+            <button class="smart-link" id="replyOpenHome" type="button"><span>↗</span> Помочь с ответом <b>PRO</b></button>
+          </div>
           <p class="free-note"><span>10 писем бесплатно</span><i></i><span>полная коллекция — 4,99 €</span></p>
         </div>
       </section>
@@ -94,18 +97,37 @@
           <button id="speakButton" type="button">◖ Прочитать</button>
           <button id="postcardButton" type="button">↓ Открытка</button>
           <button id="favoriteButton" type="button">♡ Сохранить</button>
-          <button class="go-home" type="button">⌂ На главную</button>
+          <button class="go-home home-return" type="button">⌂ На главную</button>
         </div>
         <button class="ai-inline" id="aiOpenLetter" type="button"><span>✦</span> Создать персональное письмо</button>
       </section>
     </main>
+
+    <div class="panel-layer center-layer" id="setupLayer" aria-hidden="true">
+      <button class="panel-backdrop" id="setupBackdrop" type="button" aria-label="Закрыть"></button>
+      <section class="setup-card" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+        <button class="panel-close setup-close" id="setupClose" type="button" aria-label="Закрыть">×</button>
+        <p class="panel-eyebrow">ПЕРЕД ОТКРЫТИЕМ ПИСЬМА</p>
+        <h2 id="setupTitle">Для кого это письмо?</h2>
+        <p class="setup-note">Имена нужны только для личного обращения и подписи.</p>
+        <form id="setupForm">
+          <div class="simple-form">
+            <label><span>От кого</span><input id="setupSenderName" maxlength="36" autocomplete="name" placeholder="Ваше имя" /></label>
+            <label><span>Для кого</span><input id="setupRecipientName" maxlength="36" autocomplete="off" placeholder="Имя получателя" /></label>
+          </div>
+          <p class="setup-error" id="setupError" hidden>Введите обычные имена или семейные роли.</p>
+          <button class="generate-button" type="submit"><span class="generate-spark">♡</span><span id="setupSubmitLabel">Открыть письмо</span><i>→</i></button>
+        </form>
+        <button class="setup-home go-home" type="button">⌂ На главную</button>
+      </section>
+    </div>
 
     <div class="panel-layer" id="aiLayer" aria-hidden="true">
       <button class="panel-backdrop" id="aiBackdrop" type="button" aria-label="Закрыть редактор"></button>
       <section class="side-panel ai-panel" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
         <header class="panel-header">
           <div><p class="panel-eyebrow">УМНЫЙ РЕДАКТОР · БЕЗ СЛУЧАЙНЫХ ФРАЗ</p><h2 id="aiTitle">Личное письмо</h2></div>
-          <button class="panel-close" id="aiClose" type="button" aria-label="Закрыть">×</button>
+          <div class="panel-header-actions"><button class="panel-home go-home" type="button">⌂ На главную</button><button class="panel-close" id="aiClose" type="button" aria-label="Закрыть">×</button></div>
         </header>
 
         <div class="adab-banner">
@@ -113,13 +135,24 @@
           <div><strong>Режим адаба всегда включён</strong><small>Только уважительные слова. Темы 18+, грубость и запретное содержание блокируются.</small></div>
         </div>
 
+        <div class="ai-mode-tabs" role="tablist" aria-label="Режим помощника">
+          <button class="is-active" id="letterModeTab" type="button" role="tab" aria-selected="true" aria-controls="letterComposerPane" data-ai-mode="letter">✦ Письмо</button>
+          <button id="replyModeTab" type="button" role="tab" aria-selected="false" aria-controls="replyComposerPane" data-ai-mode="reply">↗ Ответ на сообщение</button>
+        </div>
+
+        <div id="letterComposerPane" role="tabpanel" aria-labelledby="letterModeTab">
+
         <form id="aiForm">
           <div class="name-route" aria-hidden="true"><span>ОТ</span><i>✦</i><span>ДЛЯ</span></div>
           <div class="simple-form">
             <label><span>От кого</span><input id="aiSenderName" maxlength="36" autocomplete="name" placeholder="Ваше имя или Амина (дочь)" /></label>
             <label><span>Для кого</span><input id="aiRecipientName" maxlength="36" autocomplete="off" placeholder="Имя или Мама" /></label>
           </div>
-          <p class="form-hint">Можно написать роль прямо рядом с именем: «Амина (дочь)» → «Мама». Редактор сам подберёт смысл и обращение.</p>
+          <div class="choice-grid">
+            <label><span>Кому вы пишете · необязательно</span><select id="aiRelationship"><option value="auto">Определить автоматически</option><option value="mother">Маме</option><option value="father">Папе</option><option value="spouse">Супругу или супруге</option><option value="child">Сыну или дочери</option><option value="sibling">Брату или сестре</option><option value="grandparent">Бабушке или дедушке</option><option value="friend">Другу или подруге</option><option value="teacher">Учителю или наставнику</option><option value="universal">Другому человеку</option></select></label>
+            <label><span>Стиль письма · необязательно</span><select id="aiTone"><option value="auto">Подобрать автоматически</option><option value="loving">Любовное · скромно</option><option value="romantic">Романтическое · только супругам</option><option value="classic">Классическое</option><option value="support">Поддержка</option><option value="gratitude">Благодарность</option></select></label>
+          </div>
+          <p class="form-hint">Выбор необязателен. Романтический стиль разрешён только для супруга или супруги; фильтр адаба остаётся включён.</p>
           <button class="generate-button" id="generateButton" type="submit"><span class="generate-spark">✦</span><span class="generate-label">Создать красивое письмо</span><i>→</i></button>
         </form>
 
@@ -152,6 +185,27 @@
         </div>
 
         <div class="quality-note"><span>◆</span><p><strong>Почему текст стал лучше:</strong> редактор сначала определяет семейный контекст, затем собирает цельное письмо из проверенных смысловых блоков и проверяет результат. Никакой загрузки модели на 500 МБ.</p></div>
+        </div>
+
+        <div id="replyComposerPane" role="tabpanel" aria-labelledby="replyModeTab" hidden>
+          <form id="replyForm">
+            <label class="wide-label"><span>Что вам написали?</span><textarea id="replyIncoming" rows="6" maxlength="1800" placeholder="Вставьте сюда сообщение, на которое хотите ответить…"></textarea></label>
+            <label class="wide-label reply-goal-label"><span>Что вы хотите сказать · необязательно</span><textarea id="replyGoal" rows="3" maxlength="320" placeholder="Например: принимаю предложение; приду в 19:00; хочу вежливо отказаться…"></textarea></label>
+            <div class="choice-grid">
+              <label><span>Кто вам написал · необязательно</span><select id="replyRelationship"><option value="auto">Не указывать</option><option value="spouse">Супруг или супруга</option><option value="family">Член семьи</option><option value="friend">Друг или подруга</option><option value="colleague">Коллега</option><option value="universal">Другой человек</option></select></label>
+              <label><span>Как ответить · необязательно</span><select id="replyTone"><option value="auto">Подобрать автоматически</option><option value="calm">Спокойно</option><option value="warm">Тепло</option><option value="support">Поддержать</option><option value="reconcile">Помириться</option></select></label>
+            </div>
+            <p class="form-hint">Помощник напишет уважительный ответ без 18+, грубости и двусмысленных фраз. Перед отправкой обязательно перечитайте его.</p>
+            <button class="generate-button" id="replyGenerateButton" type="submit"><span class="generate-spark">↗</span><span class="reply-generate-label">Подготовить ответ</span><i>→</i></button>
+          </form>
+          <div class="generation-status" id="replyStatus" hidden><div class="status-row"><span id="replyStatusText">Подбираю спокойный ответ…</span><strong id="replyStatusPercent">0%</strong></div><div class="status-track"><i id="replyStatusBar"></i></div></div>
+          <div class="safety-message" id="replySafety" hidden><strong>Нужен другой текст</strong><p id="replySafetyReason">Вставьте обычное сообщение без запрещённого содержания.</p></div>
+          <div class="generated-card" id="replyGeneratedCard" hidden>
+            <div class="generated-top"><span>ГОТОВЫЙ ОТВЕТ</span><button id="regenerateReply" type="button">↻ Другой вариант</button></div>
+            <textarea id="replyGeneratedText" rows="7" aria-label="Сгенерированный ответ"></textarea>
+            <div class="generated-actions single-action"><button class="copy-button" id="copyReply" type="button">▣ Скопировать ответ</button></div>
+          </div>
+        </div>
         <p class="religious-note">Фильтр помогает сохранять скромность и уважение, но не является религиозным заключением. Перед отправкой перечитайте письмо.</p>
       </section>
     </div>
@@ -161,7 +215,7 @@
       <section class="side-panel library-panel" role="dialog" aria-modal="true" aria-labelledby="libraryTitle">
         <header class="panel-header sticky-header">
           <div><p class="panel-eyebrow">50 ПРОВЕРЕННЫХ ТЕКСТОВ</p><h2 id="libraryTitle">Коллекция</h2></div>
-          <button class="panel-close" id="libraryClose" type="button" aria-label="Закрыть">×</button>
+          <div class="panel-header-actions"><button class="panel-home go-home" type="button">⌂ На главную</button><button class="panel-close" id="libraryClose" type="button" aria-label="Закрыть">×</button></div>
         </header>
         <div class="library-summary"><strong id="accessLabel">10 писем открыто</strong><span>Каждый текст автоматически обращается к выбранному человеку.</span></div>
         <div class="category-row" id="categoryRow" role="tablist">
@@ -180,7 +234,7 @@
       <section class="side-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
         <header class="panel-header">
           <div><p class="panel-eyebrow">ВАША АТМОСФЕРА</p><h2 id="settingsTitle">Настроение</h2></div>
-          <button class="panel-close" id="settingsClose" type="button" aria-label="Закрыть">×</button>
+          <div class="panel-header-actions"><button class="panel-home go-home" type="button">⌂ На главную</button><button class="panel-close" id="settingsClose" type="button" aria-label="Закрыть">×</button></div>
         </header>
 
         <div class="atmosphere-grid">
@@ -218,8 +272,8 @@
 
         <div class="premium-settings-card">
           <span class="premium-mini">ПОЛНАЯ ВЕРСИЯ</span>
-          <h3>Откройте все 50 писем</h3>
-          <p>Одна покупка, восстановление через аккаунт магазина и все будущие тексты.</p>
+          <h3>Откройте полный GlowLetter</h3>
+          <p>Все 50 писем, ИИ‑редактор, помощник ответов и будущие функции — одной покупкой.</p>
           <button id="settingsPurchase" type="button">Открыть за <span class="price-label">4,99 €</span></button>
         </div>
 
@@ -235,10 +289,11 @@
         <div class="paywall-orbit" aria-hidden="true"><span>✦</span><i>♡</i><b>☾</b></div>
         <p class="panel-eyebrow">GLOWLETTER · ПОЛНЫЙ ДОСТУП</p>
         <h2 id="paywallTitle">Ещё 40 писем<br /><em>для важных людей</em></h2>
-        <p>Первые 10 остаются бесплатными. Полная коллекция, открытки и все будущие тексты открываются навсегда.</p>
-        <ul><li>50 персональных писем</li><li>восстановление покупки</li><li>обновления коллекции</li></ul>
+        <p>Первые 10 писем остаются бесплатными. Полная коллекция, ИИ‑редактор, помощник ответов и будущие функции открываются навсегда.</p>
+        <ul><li>все 50 персональных писем</li><li>ИИ‑письма с выбором стиля</li><li>помощник ответов</li><li>восстановление покупки</li></ul>
         <button class="purchase-button" id="purchaseButton" type="button"><span>Открыть полный доступ</span><strong class="price-label">4,99 €</strong></button>
         <button class="restore-button" id="restoreButton" type="button">Восстановить покупку</button>
+        <button class="paywall-home go-home" type="button">⌂ На главную</button>
         <small>Оплата проходит через магазин. Цена может отображаться в местной валюте.</small>
       </section>
     </div>
@@ -246,8 +301,8 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <audio id="nasheed" loop preload="none"></audio>
   </div>
-  <script src="config.js?v=5"></script>
-  <script src="letters.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="config.js?v=6"></script>
+  <script src="letters.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
-const CACHE = "glow-letter-v5";
+const CACHE = "glow-letter-v6";
 const CORE = [
   "./",
   "index.html",
-  "styles.css?v=5",
-  "config.js?v=5",
-  "letters.js?v=5",
-  "app.js?v=5",
-  "manifest.webmanifest?v=5",
+  "styles.css?v=6",
+  "config.js?v=6",
+  "letters.js?v=6",
+  "app.js?v=6",
+  "manifest.webmanifest?v=6",
   "icon.svg",
   "privacy.html",
   "assets/campfire-lake.png",

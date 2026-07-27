@@ -2,7 +2,7 @@
   "id": "./",
   "name": "GlowLetter: Тёплые слова",
   "short_name": "GlowLetter",
-  "description": "Атмосферные персональные письма и 50 тёплых текстов.",
+  "description": "Атмосферные персональные письма, умный редактор и помощник ответов.",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
@@ -17,6 +17,7 @@
   ],
   "shortcuts": [
     { "name": "Создать письмо", "short_name": "Создать", "url": "./?compose=1" },
+    { "name": "Помочь с ответом", "short_name": "Ответ", "url": "./?reply=1" },
     { "name": "Коллекция", "short_name": "Письма", "url": "./?library=1" }
   ]
 }

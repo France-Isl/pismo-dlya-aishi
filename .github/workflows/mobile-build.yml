@@ -56,12 +56,12 @@ jobs:
         with:
           gradle-version: "9.4.1"
 
-      - name: Test billing and build debug APK plus unsigned release AAB
+      - name: Test billing and build testable debug APK plus unsigned release AAB
         working-directory: mobile/android
         env:
           NURPISMO_VERIFICATION_URL: ${{ inputs.verification_url }}
           NURPISMO_CLOUD_PROJECT_NUMBER: ${{ inputs.cloud_project_number }}
-        run: gradle --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
+        run: gradle --no-daemon --stacktrace -PenableBillingMock=true :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
 
       - name: Collect release files
         shell: bash
@@ -100,7 +100,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          NOTES='Preview only. The APK is debug-signed for testing. The AAB is intentionally unsigned and cannot be submitted to production until Play App Signing/upload-key and the purchase-verification backend are configured.'
+          NOTES='Preview only. The debug-signed APK uses a test entitlement: unlocking premium never charges real money. The AAB keeps test unlock disabled, is intentionally unsigned, and cannot be submitted to production until Play App Signing/upload-key and the purchase-verification backend are configured.'
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --target "$GITHUB_SHA" --title "GlowLetter v1.0.0 preview" --notes "$NOTES" --prerelease
           else
