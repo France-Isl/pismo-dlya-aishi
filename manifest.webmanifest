@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "НурПисьмо: Тёплые слова",
-  "short_name": "НурПисьмо",
+  "name": "GlowLetter: Тёплые слова",
+  "short_name": "GlowLetter",
   "description": "Атмосферные персональные письма и 50 тёплых текстов.",
   "lang": "ru",
   "start_url": "./",

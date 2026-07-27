@@ -10,22 +10,25 @@
 
   const UI = {
     ru: {
-      title: "НурПисьмо · Тёплые слова", brand: "Тёплые слова<br><em>находят путь</em>", brandCopy: "Вечер у озера, живой дождь и письмо, созданное именно для {to}.", from: "от", open: "Открыть письмо", create: "Создать своё письмо", free: "10 писем бесплатно", full: "полная коллекция — 4,99 €", weather: "Погода", next: "Следующее письмо", copy: "Копировать текст", copied: "Текст скопирован", read: "Прочитать", stop: "Остановить", postcard: "Открытка", saved: "Сохранить", favorite: "Сохранено", home: "На главную", personal: "Создать персональное письмо", stage: "Вечер сохранил эти слова для тебя", letterTitle: "Несколько слов для тебя", for: "для", warmSign: "С теплом,", aiTitle: "Личное письмо", aiEyebrow: "УМНЫЙ РЕДАКТОР · БЕЗ СЛУЧАЙНЫХ ФРАЗ", fromWho: "От кого", forWho: "Для кого", formHint: "Можно написать роль рядом с именем: «Амина (дочь)» → «Мама». Редактор сам подберёт смысл.", generate: "Создать красивое письмо", generating: "Собираю письмо по смыслу…", own: "Написать свой текст", ownWords: "Ваши слова", ownPlaceholder: "Напишите письмо своими словами…", useOwn: "Открыть моё письмо", ready: "ГОТОВОЕ ПИСЬМО", variant: "↻ Другой вариант", openAs: "Открыть как письмо", library: "Коллекция", openCount: "10 писем открыто", allCount: "Все 50 писем открыты", all: "Все", warm: "Тепло", gratitude: "Спасибо", support: "Поддержка", family: "Семья", openQuote: "Открыть", unlock: "Открыть полный доступ", locked: "Доступно в полной версии", settings: "Настроение", langLabel: "Язык приложения и писем", choosePhoto: "Выбрать фото", resetPhoto: "Вернуть озеро", buy: "Открыть за", restore: "Восстановить покупку", purchaseUnavailable: "Покупка станет доступна в приложении из Google Play", restored: "Покупка проверена", premiumOn: "Полный доступ открыт навсегда", safety: "Текст содержит запрещённую или двусмысленную формулировку. Измените его.", namesSafety: "Введите обычные имена или семейные роли.", customAdded: "Ваше письмо готово и сохранено в ссылке", rainOn: "Дождь включён", rainOff: "Дождь выключен", natureOn: "Ночной лес зазвучал", natureOff: "Звуки природы выключены", photoReady: "Личный фон сохранён на этом устройстве", photoReset: "Возвращён фон у озера", locationDenied: "Без разрешения местная погода недоступна", weatherFail: "Не удалось получить погоду", install: "Установить НурПисьмо", shareText: "Это письмо для тебя", downloadReady: "Открытка готова", composeFail: "Облачный редактор недоступен — создан проверенный вариант", close: "Закрыть"
+      title: "GlowLetter · Тёплые слова", brand: "Тёплые слова<br><em>находят путь</em>", brandCopy: "Вечер у озера, живой дождь и слова, которые хочется сохранить.", from: "от", open: "Открыть письмо", create: "Создать своё письмо", free: "10 писем бесплатно", full: "полная коллекция — 4,99 €", weather: "Погода", next: "Следующее письмо", copy: "Копировать текст", copied: "Текст скопирован", read: "Прочитать", stop: "Остановить", postcard: "Открытка", saved: "Сохранить", favorite: "Сохранено", home: "На главную", personal: "Создать персональное письмо", stage: "Вечер сохранил эти слова для тебя", letterTitle: "Несколько слов для тебя", for: "для", warmSign: "С теплом,", aiTitle: "Личное письмо", aiEyebrow: "УМНЫЙ РЕДАКТОР · БЕЗ СЛУЧАЙНЫХ ФРАЗ", fromWho: "От кого", forWho: "Для кого", formHint: "Можно написать роль рядом с именем: «Амина (дочь)» → «Мама». Редактор сам подберёт смысл.", generate: "Создать красивое письмо", generating: "Собираю письмо по смыслу…", own: "Написать свой текст", ownWords: "Ваши слова", ownPlaceholder: "Напишите письмо своими словами…", useOwn: "Открыть моё письмо", ready: "ГОТОВОЕ ПИСЬМО", variant: "↻ Другой вариант", openAs: "Открыть как письмо", library: "Коллекция", openCount: "10 писем открыто", allCount: "Все 50 писем открыты", all: "Все", warm: "Тепло", gratitude: "Спасибо", support: "Поддержка", family: "Семья", openQuote: "Открыть", unlock: "Открыть полный доступ", locked: "Доступно в полной версии", settings: "Настроение", langLabel: "Язык приложения и писем", choosePhoto: "Выбрать фото", resetPhoto: "Вернуть озеро", buy: "Открыть за", restore: "Восстановить покупку", purchaseUnavailable: "Покупка станет доступна в приложении из Google Play", restored: "Покупка проверена", premiumOn: "Полный доступ открыт навсегда", safety: "Текст содержит запрещённую или двусмысленную формулировку. Измените его.", namesSafety: "Введите обычные имена или семейные роли.", customAdded: "Ваше письмо готово и сохранено в ссылке", rainOn: "Дождь включён", rainOff: "Дождь выключен", natureOn: "Ночной лес зазвучал", natureOff: "Звуки природы выключены", photoReady: "Личный фон сохранён на этом устройстве", photoReset: "Возвращён фон у озера", locationDenied: "Без разрешения местная погода недоступна", weatherFail: "Не удалось получить погоду", install: "Установить GlowLetter", shareText: "Это письмо для тебя", downloadReady: "Открытка готова", composeFail: "Облачный редактор недоступен — создан проверенный вариант", close: "Закрыть"
     },
     en: {
-      title: "NurLetter · Warm words", brand: "Warm words<br><em>find their way</em>", brandCopy: "An evening by the lake, living rain, and a letter made especially for {to}.", from: "from", open: "Open the letter", create: "Create your own letter", free: "10 letters free", full: "full collection — €4.99", weather: "Weather", next: "Next letter", copy: "Copy text", copied: "Text copied", read: "Read aloud", stop: "Stop", postcard: "Postcard", saved: "Save", favorite: "Saved", home: "Home", personal: "Create a personal letter", stage: "The evening kept these words for you", letterTitle: "A few words for you", for: "for", warmSign: "With warmth,", aiTitle: "Personal letter", aiEyebrow: "SMART EDITOR · NO RANDOM PHRASES", fromWho: "From", forWho: "To", formHint: "You may add a role next to the name: “Amina (daughter)” → “Mum”. The editor will understand the context.", generate: "Create a beautiful letter", generating: "Building a coherent letter…", own: "Write your own text", ownWords: "Your words", ownPlaceholder: "Write your letter in your own words…", useOwn: "Open my letter", ready: "YOUR LETTER", variant: "↻ Another version", openAs: "Open as a letter", library: "Collection", openCount: "10 letters unlocked", allCount: "All 50 letters unlocked", all: "All", warm: "Warmth", gratitude: "Gratitude", support: "Support", family: "Family", openQuote: "Open", unlock: "Unlock full access", locked: "Available in the full version", settings: "Atmosphere", langLabel: "App and letter language", choosePhoto: "Choose a photo", resetPhoto: "Restore the lake", buy: "Unlock for", restore: "Restore purchase", purchaseUnavailable: "Purchases will be available in the Google Play app", restored: "Purchase checked", premiumOn: "Full access unlocked forever", safety: "This text contains a prohibited or ambiguous phrase. Please change it.", namesSafety: "Enter ordinary names or family roles.", customAdded: "Your letter is ready and saved in the link", rainOn: "Rain is on", rainOff: "Rain is off", natureOn: "The night forest is alive", natureOff: "Nature sounds are off", photoReady: "Your background is saved on this device", photoReset: "The lake background is back", locationDenied: "Local weather needs location permission", weatherFail: "Weather is unavailable", install: "Install NurLetter", shareText: "This letter is for you", downloadReady: "Your postcard is ready", composeFail: "Cloud editor unavailable — a verified version was created", close: "Close"
+      title: "GlowLetter · Warm Words", brand: "Warm words<br><em>find their way</em>", brandCopy: "An evening by the lake, living rain, and words worth keeping.", from: "from", open: "Open the letter", create: "Create your own letter", free: "10 letters free", full: "full collection — €4.99", weather: "Weather", next: "Next letter", copy: "Copy text", copied: "Text copied", read: "Read aloud", stop: "Stop", postcard: "Postcard", saved: "Save", favorite: "Saved", home: "Home", personal: "Create a personal letter", stage: "The evening kept these words for you", letterTitle: "A few words for you", for: "for", warmSign: "With warmth,", aiTitle: "Personal letter", aiEyebrow: "SMART EDITOR · NO RANDOM PHRASES", fromWho: "From", forWho: "To", formHint: "You may add a role next to the name: “Amina (daughter)” → “Mum”. The editor will understand the context.", generate: "Create a beautiful letter", generating: "Building a coherent letter…", own: "Write your own text", ownWords: "Your words", ownPlaceholder: "Write your letter in your own words…", useOwn: "Open my letter", ready: "YOUR LETTER", variant: "↻ Another version", openAs: "Open as a letter", library: "Collection", openCount: "10 letters unlocked", allCount: "All 50 letters unlocked", all: "All", warm: "Warmth", gratitude: "Gratitude", support: "Support", family: "Family", openQuote: "Open", unlock: "Unlock full access", locked: "Available in the full version", settings: "Atmosphere", langLabel: "App and letter language", choosePhoto: "Choose a photo", resetPhoto: "Restore the lake", buy: "Unlock for", restore: "Restore purchase", purchaseUnavailable: "Purchases will be available in the Google Play app", restored: "Purchase checked", premiumOn: "Full access unlocked forever", safety: "This text contains a prohibited or ambiguous phrase. Please change it.", namesSafety: "Enter ordinary names or family roles.", customAdded: "Your letter is ready and saved in the link", rainOn: "Rain is on", rainOff: "Rain is off", natureOn: "The night forest is alive", natureOff: "Nature sounds are off", photoReady: "Your background is saved on this device", photoReset: "The lake background is back", locationDenied: "Local weather needs location permission", weatherFail: "Weather is unavailable", install: "Install GlowLetter", shareText: "This letter is for you", downloadReady: "Your postcard is ready", composeFail: "Cloud editor unavailable — a verified version was created", close: "Close"
     },
     fr: {
-      title: "NurLettre · Mots chaleureux", brand: "Les mots sincères<br><em>trouvent leur chemin</em>", brandCopy: "Un soir au bord du lac, une pluie vivante et une lettre créée spécialement pour {to}.", from: "de", open: "Ouvrir la lettre", create: "Créer votre lettre", free: "10 lettres gratuites", full: "collection complète — 4,99 €", weather: "Météo", next: "Lettre suivante", copy: "Copier le texte", copied: "Texte copié", read: "Lire à voix haute", stop: "Arrêter", postcard: "Carte", saved: "Enregistrer", favorite: "Enregistré", home: "Accueil", personal: "Créer une lettre personnelle", stage: "Le soir a gardé ces mots pour toi", letterTitle: "Quelques mots pour toi", for: "pour", warmSign: "Avec chaleur,", aiTitle: "Lettre personnelle", aiEyebrow: "ÉDITEUR INTELLIGENT · AUCUNE PHRASE ALÉATOIRE", fromWho: "De la part de", forWho: "Pour", formHint: "Vous pouvez ajouter le lien familial au nom : « Amina (fille) » → « Maman ». L’éditeur comprendra le contexte.", generate: "Créer une belle lettre", generating: "Je compose une lettre cohérente…", own: "Écrire votre propre texte", ownWords: "Vos mots", ownPlaceholder: "Écrivez votre lettre avec vos propres mots…", useOwn: "Ouvrir ma lettre", ready: "VOTRE LETTRE", variant: "↻ Une autre version", openAs: "Ouvrir comme lettre", library: "Collection", openCount: "10 lettres accessibles", allCount: "Les 50 lettres sont accessibles", all: "Toutes", warm: "Chaleur", gratitude: "Merci", support: "Soutien", family: "Famille", openQuote: "Ouvrir", unlock: "Débloquer l’accès complet", locked: "Disponible dans la version complète", settings: "Atmosphère", langLabel: "Langue de l’application et des lettres", choosePhoto: "Choisir une photo", resetPhoto: "Remettre le lac", buy: "Débloquer pour", restore: "Restaurer l’achat", purchaseUnavailable: "L’achat sera disponible dans l’application Google Play", restored: "Achat vérifié", premiumOn: "Accès complet débloqué pour toujours", safety: "Ce texte contient une formulation interdite ou ambiguë. Modifiez-le.", namesSafety: "Saisissez des prénoms ordinaires ou des rôles familiaux.", customAdded: "Votre lettre est prête et enregistrée dans le lien", rainOn: "La pluie est activée", rainOff: "La pluie est désactivée", natureOn: "La forêt nocturne s’éveille", natureOff: "Les sons de la nature sont désactivés", photoReady: "Votre fond est enregistré sur cet appareil", photoReset: "Le lac est de retour", locationDenied: "La météo locale nécessite votre autorisation", weatherFail: "La météo est indisponible", install: "Installer NurLettre", shareText: "Cette lettre est pour toi", downloadReady: "Votre carte est prête", composeFail: "L’éditeur en ligne est indisponible — une version vérifiée a été créée", close: "Fermer"
+      title: "GlowLetter · Mots chaleureux", brand: "Les mots sincères<br><em>trouvent leur chemin</em>", brandCopy: "Un soir au bord du lac, une pluie vivante et des mots que l’on souhaite garder.", from: "de", open: "Ouvrir la lettre", create: "Créer votre lettre", free: "10 lettres gratuites", full: "collection complète — 4,99 €", weather: "Météo", next: "Lettre suivante", copy: "Copier le texte", copied: "Texte copié", read: "Lire à voix haute", stop: "Arrêter", postcard: "Carte", saved: "Enregistrer", favorite: "Enregistré", home: "Accueil", personal: "Créer une lettre personnelle", stage: "Le soir a gardé ces mots pour toi", letterTitle: "Quelques mots pour toi", for: "pour", warmSign: "Avec chaleur,", aiTitle: "Lettre personnelle", aiEyebrow: "ÉDITEUR INTELLIGENT · AUCUNE PHRASE ALÉATOIRE", fromWho: "De la part de", forWho: "Pour", formHint: "Vous pouvez ajouter le lien familial au nom : « Amina (fille) » → « Maman ». L’éditeur comprendra le contexte.", generate: "Créer une belle lettre", generating: "Je compose une lettre cohérente…", own: "Écrire votre propre texte", ownWords: "Vos mots", ownPlaceholder: "Écrivez votre lettre avec vos propres mots…", useOwn: "Ouvrir ma lettre", ready: "VOTRE LETTRE", variant: "↻ Une autre version", openAs: "Ouvrir comme lettre", library: "Collection", openCount: "10 lettres accessibles", allCount: "Les 50 lettres sont accessibles", all: "Toutes", warm: "Chaleur", gratitude: "Merci", support: "Soutien", family: "Famille", openQuote: "Ouvrir", unlock: "Débloquer l’accès complet", locked: "Disponible dans la version complète", settings: "Atmosphère", langLabel: "Langue de l’application et des lettres", choosePhoto: "Choisir une photo", resetPhoto: "Remettre le lac", buy: "Débloquer pour", restore: "Restaurer l’achat", purchaseUnavailable: "L’achat sera disponible dans l’application Google Play", restored: "Achat vérifié", premiumOn: "Accès complet débloqué pour toujours", safety: "Ce texte contient une formulation interdite ou ambiguë. Modifiez-le.", namesSafety: "Saisissez des prénoms ordinaires ou des rôles familiaux.", customAdded: "Votre lettre est prête et enregistrée dans le lien", rainOn: "La pluie est activée", rainOff: "La pluie est désactivée", natureOn: "La forêt nocturne s’éveille", natureOff: "Les sons de la nature sont désactivés", photoReady: "Votre fond est enregistré sur cet appareil", photoReset: "Le lac est de retour", locationDenied: "La météo locale nécessite votre autorisation", weatherFail: "La météo est indisponible", install: "Installer GlowLetter", shareText: "Cette lettre est pour toi", downloadReady: "Votre carte est prête", composeFail: "L’éditeur en ligne est indisponible — une version vérifiée a été créée", close: "Fermer"
     }
   };
 
   const EXTRA_UI = {
-    ru: { adabTitle:"Режим адаба всегда включён",adabNote:"Только уважительные слова. Темы 18+, грубость и запретное содержание блокируются.",ownNote:"Перед добавлением текст проходит тот же фильтр скромности. Он будет сохранён в персональной ссылке.",qualityTitle:"Почему текст стал лучше:",qualityBody:"редактор определяет семейный контекст, собирает цельное письмо из проверенных смыслов и проверяет результат. Никакой модели на 500 МБ.",religiousNote:"Фильтр помогает сохранять скромность и уважение, но не является религиозным заключением. Перед отправкой перечитайте письмо.",collectionEyebrow:"50 ПРОВЕРЕННЫХ ТЕКСТОВ",collectionNote:"Каждый текст автоматически обращается к выбранному человеку.",settingsEyebrow:"ВАША АТМОСФЕРА",rainTitle:"Живой дождь",rainNote:"крупные капли и брызги",natureTitle:"Ночной лес",natureNote:"сверчки, ветер и лягушки",weatherTitle:"Моя погода",weatherNote:"атмосфера по месту",fullscreenTitle:"Полный экран",fullscreenNote:"без лишних элементов",personalBg:"Личный фон",ownPhoto:"Своя фотография",localOnly:"Останется только на этом устройстве",music:"Музыка и нашиды",fullVersion:"ПОЛНАЯ ВЕРСИЯ",allLetters:"Откройте все 50 писем",onePurchase:"Одна покупка, восстановление через аккаунт магазина и все будущие тексты.",paywallEyebrow:"НУРПИСЬМО · ПОЛНЫЙ ДОСТУП",paywallTitle:"Ещё 40 писем<br><em>для важных людей</em>",paywallBody:"Первые 10 остаются бесплатными. Полная коллекция, открытки и все будущие тексты открываются навсегда.",benefit1:"50 персональных писем",benefit2:"восстановление покупки",benefit3:"обновления коллекции",payButton:"Открыть полный доступ",storeNote:"Оплата проходит через магазин. Цена может отображаться в местной валюте.",privacy:"Конфиденциальность",supportLink:"Поддержка",customMusic:"Добавить свой нашид",customMusicNote:"MP3, M4A, OGG или WAV" },
-    en: { adabTitle:"Adab mode is always on",adabNote:"Respectful words only. Adult content, abuse, and prohibited themes are blocked.",ownNote:"Your text passes the same modesty filter and is saved inside the personal link.",qualityTitle:"Why the text is better:",qualityBody:"the editor identifies family context, builds one coherent letter from reviewed ideas, and validates the result. No 500 MB model download.",religiousNote:"The filter supports modest and respectful wording but is not a religious ruling. Please reread the letter before sending.",collectionEyebrow:"50 REVIEWED TEXTS",collectionNote:"Every text automatically addresses the person you selected.",settingsEyebrow:"YOUR ATMOSPHERE",rainTitle:"Living rain",rainNote:"large drops and gentle splashes",natureTitle:"Night forest",natureNote:"crickets, wind, and frogs",weatherTitle:"My weather",weatherNote:"atmosphere for your location",fullscreenTitle:"Full screen",fullscreenNote:"a clear, immersive view",personalBg:"Personal background",ownPhoto:"Your own photo",localOnly:"Stays only on this device",music:"Music and nasheeds",fullVersion:"FULL VERSION",allLetters:"Unlock all 50 letters",onePurchase:"One purchase, store-account restoration, and all future texts.",paywallEyebrow:"NURLETTER · FULL ACCESS",paywallTitle:"40 more letters<br><em>for important people</em>",paywallBody:"The first 10 stay free. The complete collection, postcards, and future texts unlock forever.",benefit1:"50 personal letters",benefit2:"purchase restoration",benefit3:"collection updates",payButton:"Unlock full access",storeNote:"Payment is handled by the store. The price may appear in your local currency.",privacy:"Privacy",supportLink:"Support",customMusic:"Add your own nasheed",customMusicNote:"MP3, M4A, OGG, or WAV" },
-    fr: { adabTitle:"Le mode adab est toujours actif",adabNote:"Uniquement des mots respectueux. Le contenu adulte, la grossièreté et les thèmes interdits sont bloqués.",ownNote:"Votre texte passe le même filtre de pudeur et sera enregistré dans le lien personnel.",qualityTitle:"Pourquoi le texte est meilleur :",qualityBody:"l’éditeur reconnaît le contexte familial, compose une lettre cohérente avec des idées vérifiées et contrôle le résultat. Aucun modèle de 500 Mo.",religiousNote:"Le filtre favorise la pudeur et le respect, mais ne constitue pas un avis religieux. Relisez la lettre avant de l’envoyer.",collectionEyebrow:"50 TEXTES VÉRIFIÉS",collectionNote:"Chaque texte s’adresse automatiquement à la personne choisie.",settingsEyebrow:"VOTRE ATMOSPHÈRE",rainTitle:"Pluie vivante",rainNote:"grosses gouttes et éclaboussures douces",natureTitle:"Forêt nocturne",natureNote:"grillons, vent et grenouilles",weatherTitle:"Ma météo",weatherNote:"une ambiance adaptée au lieu",fullscreenTitle:"Plein écran",fullscreenNote:"une vue claire et immersive",personalBg:"Fond personnel",ownPhoto:"Votre photo",localOnly:"Reste uniquement sur cet appareil",music:"Musique et nasheeds",fullVersion:"VERSION COMPLÈTE",allLetters:"Débloquez les 50 lettres",onePurchase:"Un achat, restauration via le compte du magasin et tous les futurs textes.",paywallEyebrow:"NURLETTRE · ACCÈS COMPLET",paywallTitle:"40 lettres de plus<br><em>pour les personnes importantes</em>",paywallBody:"Les 10 premières restent gratuites. La collection, les cartes et les futurs textes sont débloqués pour toujours.",benefit1:"50 lettres personnelles",benefit2:"restauration de l’achat",benefit3:"mises à jour de la collection",payButton:"Débloquer l’accès complet",storeNote:"Le paiement est géré par le magasin. Le prix peut apparaître dans votre devise locale.",privacy:"Confidentialité",supportLink:"Assistance",customMusic:"Ajouter votre nasheed",customMusicNote:"MP3, M4A, OGG ou WAV" }
+    ru: { adabTitle:"Режим адаба всегда включён",adabNote:"Только уважительные слова. Темы 18+, грубость и запретное содержание блокируются.",ownNote:"Перед добавлением текст проходит тот же фильтр скромности. Он будет сохранён в персональной ссылке.",qualityTitle:"Почему текст стал лучше:",qualityBody:"редактор определяет семейный контекст, собирает цельное письмо из проверенных смыслов и проверяет результат. Никакой модели на 500 МБ.",religiousNote:"Фильтр помогает сохранять скромность и уважение, но не является религиозным заключением. Перед отправкой перечитайте письмо.",collectionEyebrow:"50 ПРОВЕРЕННЫХ ТЕКСТОВ",collectionNote:"Каждый текст автоматически обращается к выбранному человеку.",settingsEyebrow:"ВАША АТМОСФЕРА",rainTitle:"Живой дождь",rainNote:"крупные капли и брызги",natureTitle:"Ночной лес",natureNote:"сверчки, ветер и лягушки",weatherTitle:"Моя погода",weatherNote:"атмосфера по месту",fullscreenTitle:"Полный экран",fullscreenNote:"без лишних элементов",personalBg:"Личный фон",ownPhoto:"Своя фотография",localOnly:"Останется только на этом устройстве",music:"Музыка и нашиды",fullVersion:"ПОЛНАЯ ВЕРСИЯ",allLetters:"Откройте все 50 писем",onePurchase:"Одна покупка, восстановление через аккаунт магазина и все будущие тексты.",paywallEyebrow:"GLOWLETTER · ПОЛНЫЙ ДОСТУП",paywallTitle:"Ещё 40 писем<br><em>для важных людей</em>",paywallBody:"Первые 10 остаются бесплатными. Полная коллекция, открытки и все будущие тексты открываются навсегда.",benefit1:"50 персональных писем",benefit2:"восстановление покупки",benefit3:"обновления коллекции",payButton:"Открыть полный доступ",storeNote:"Оплата проходит через магазин. Цена может отображаться в местной валюте.",privacy:"Конфиденциальность",supportLink:"Поддержка",customMusic:"Добавить свой нашид",customMusicNote:"MP3, M4A, OGG или WAV" },
+    en: { adabTitle:"Adab mode is always on",adabNote:"Respectful words only. Adult content, abuse, and prohibited themes are blocked.",ownNote:"Your text passes the same modesty filter and is saved inside the personal link.",qualityTitle:"Why the text is better:",qualityBody:"the editor identifies family context, builds one coherent letter from reviewed ideas, and validates the result. No 500 MB model download.",religiousNote:"The filter supports modest and respectful wording but is not a religious ruling. Please reread the letter before sending.",collectionEyebrow:"50 REVIEWED TEXTS",collectionNote:"Every text automatically addresses the person you selected.",settingsEyebrow:"YOUR ATMOSPHERE",rainTitle:"Living rain",rainNote:"large drops and gentle splashes",natureTitle:"Night forest",natureNote:"crickets, wind, and frogs",weatherTitle:"My weather",weatherNote:"atmosphere for your location",fullscreenTitle:"Full screen",fullscreenNote:"a clear, immersive view",personalBg:"Personal background",ownPhoto:"Your own photo",localOnly:"Stays only on this device",music:"Music and nasheeds",fullVersion:"FULL VERSION",allLetters:"Unlock all 50 letters",onePurchase:"One purchase, store-account restoration, and all future texts.",paywallEyebrow:"GLOWLETTER · FULL ACCESS",paywallTitle:"40 more letters<br><em>for important people</em>",paywallBody:"The first 10 stay free. The complete collection, postcards, and future texts unlock forever.",benefit1:"50 personal letters",benefit2:"purchase restoration",benefit3:"collection updates",payButton:"Unlock full access",storeNote:"Payment is handled by the store. The price may appear in your local currency.",privacy:"Privacy",supportLink:"Support",customMusic:"Add your own nasheed",customMusicNote:"MP3, M4A, OGG, or WAV" },
+    fr: { adabTitle:"Le mode adab est toujours actif",adabNote:"Uniquement des mots respectueux. Le contenu adulte, la grossièreté et les thèmes interdits sont bloqués.",ownNote:"Votre texte passe le même filtre de pudeur et sera enregistré dans le lien personnel.",qualityTitle:"Pourquoi le texte est meilleur :",qualityBody:"l’éditeur reconnaît le contexte familial, compose une lettre cohérente avec des idées vérifiées et contrôle le résultat. Aucun modèle de 500 Mo.",religiousNote:"Le filtre favorise la pudeur et le respect, mais ne constitue pas un avis religieux. Relisez la lettre avant de l’envoyer.",collectionEyebrow:"50 TEXTES VÉRIFIÉS",collectionNote:"Chaque texte s’adresse automatiquement à la personne choisie.",settingsEyebrow:"VOTRE ATMOSPHÈRE",rainTitle:"Pluie vivante",rainNote:"grosses gouttes et éclaboussures douces",natureTitle:"Forêt nocturne",natureNote:"grillons, vent et grenouilles",weatherTitle:"Ma météo",weatherNote:"une ambiance adaptée au lieu",fullscreenTitle:"Plein écran",fullscreenNote:"une vue claire et immersive",personalBg:"Fond personnel",ownPhoto:"Votre photo",localOnly:"Reste uniquement sur cet appareil",music:"Musique et nasheeds",fullVersion:"VERSION COMPLÈTE",allLetters:"Débloquez les 50 lettres",onePurchase:"Un achat, restauration via le compte du magasin et tous les futurs textes.",paywallEyebrow:"GLOWLETTER · ACCÈS COMPLET",paywallTitle:"40 lettres de plus<br><em>pour les personnes importantes</em>",paywallBody:"Les 10 premières restent gratuites. La collection, les cartes et les futurs textes sont débloqués pour toujours.",benefit1:"50 lettres personnelles",benefit2:"restauration de l’achat",benefit3:"mises à jour de la collection",payButton:"Débloquer l’accès complet",storeNote:"Le paiement est géré par le magasin. Le prix peut apparaître dans votre devise locale.",privacy:"Confidentialité",supportLink:"Assistance",customMusic:"Ajouter votre nasheed",customMusicNote:"MP3, M4A, OGG ou WAV" }
   };
   Object.keys(UI).forEach(code => Object.assign(UI[code], EXTRA_UI[code]));
+  UI.ru.brandCopyPersonal = "Вечер у озера, живой дождь и письмо, созданное именно для {to}.";
+  UI.en.brandCopyPersonal = "An evening by the lake, living rain, and a letter made especially for {to}.";
+  UI.fr.brandCopyPersonal = "Un soir au bord du lac, une pluie vivante et une lettre créée spécialement pour {to}.";
 
   const tracks = [
     { name: "Мураджан · slowed", source: "audio/track-1.mp3", fallback: "audio/track-1.b64" },
@@ -121,11 +124,12 @@
 
   let lang = ["ru", "en", "fr"].includes(params.get("lang")) ? params.get("lang") : (localStorage.getItem("nurLanguage") || "ru");
   if (!UI[lang]) lang = "ru";
-  let fromName = cleanName(params.get("from")) || cleanName(localStorage.getItem("nurFrom")) || "Ислам";
-  let toName = cleanName(params.get("to")) || cleanName(localStorage.getItem("nurTo")) || "Айша";
-  let sharedMessage = decodeSharedMessage(params.get("msg"));
+  let fromName = cleanName(params.get("from"));
+  let toName = cleanName(params.get("to"));
+  const initialNamesReady = Boolean(fromName && toName);
+  let sharedMessage = initialNamesReady ? decodeSharedMessage(params.get("msg")) : "";
   let letterDeck = sharedMessage ? [{ id: "shared", category: "warm", shared: true, ru: sharedMessage, en: sharedMessage, fr: sharedMessage }, ...LETTERS] : [...LETTERS];
-  let currentIndex = sharedMessage ? 0 : Math.max(0, Math.min(Number(params.get("quote") || localStorage.getItem("nurLetterIndex") || 1) - 1, Math.max(0, letterDeck.length - 1)));
+  let currentIndex = sharedMessage ? 0 : Math.max(0, Math.min(Number(params.get("quote") || (initialNamesReady ? localStorage.getItem("nurLetterIndex") : 1) || 1) - 1, Math.max(0, letterDeck.length - 1)));
   let storyOpened = false;
   let selectedCategory = "all";
   let selectedTrack = Math.max(0, Math.min(Number(localStorage.getItem("nurTrack") || 0), 3));
@@ -144,7 +148,9 @@
   let toastTimer = 0;
   let deferredInstallPrompt = null;
   let weatherEnabled = localStorage.getItem("nurWeather") === "on";
-  let favorites = new Set(JSON.parse(localStorage.getItem("nurFavorites") || "[]"));
+  let favorites;
+  try { favorites = new Set(JSON.parse(localStorage.getItem("nurFavorites") || "[]")); }
+  catch { favorites = new Set(); localStorage.removeItem("nurFavorites"); }
 
   const audio = $("#nasheed");
   const homeScreen = $("#homeScreen");
@@ -172,6 +178,15 @@
     return cleanName(value).replace(/\s*\([^)]*\)\s*/g, " ").trim() || cleanName(value);
   }
 
+  function namesReady() {
+    return Boolean(displayName(fromName) && displayName(toName));
+  }
+
+  function previewRecipient() {
+    if (displayName(toName)) return displayName(toName);
+    return lang === "en" ? "someone special" : lang === "fr" ? "une personne importante" : "важного человека";
+  }
+
   function encodeSharedMessage(text) {
     try {
       const bytes = new TextEncoder().encode(text);
@@ -192,7 +207,8 @@
   }
 
   function entryText(entry) {
-    return String(entry?.[lang] || entry?.ru || "").replaceAll("{to}", displayName(toName)).replaceAll("Айша", displayName(toName));
+    const recipient = previewRecipient();
+    return String(entry?.[lang] || entry?.ru || "").replaceAll("{to}", recipient).replaceAll("Айша", recipient);
   }
 
   function basePosition(entry) {
@@ -231,29 +247,29 @@
 
   function updateUrl(includeMessage = Boolean(sharedMessage)) {
     const url = new URL(location.href);
-    url.searchParams.set("from", fromName);
-    url.searchParams.set("to", toName);
-    url.searchParams.set("lang", lang);
+    if (fromName) url.searchParams.set("from", fromName); else url.searchParams.delete("from");
+    if (toName) url.searchParams.set("to", toName); else url.searchParams.delete("to");
+    if (lang === "ru") url.searchParams.delete("lang"); else url.searchParams.set("lang", lang);
     const position = basePosition(currentEntry());
-    if (position) url.searchParams.set("quote", String(position));
-    if (includeMessage && sharedMessage) url.searchParams.set("msg", encodeSharedMessage(sharedMessage));
+    if (position && namesReady()) url.searchParams.set("quote", String(position)); else url.searchParams.delete("quote");
+    if (includeMessage && sharedMessage && namesReady()) url.searchParams.set("msg", encodeSharedMessage(sharedMessage));
     else url.searchParams.delete("msg");
     history.replaceState({}, "", url);
   }
 
   function setNames(sender, recipient) {
-    fromName = cleanName(sender) || "Ислам";
-    toName = cleanName(recipient) || "Айша";
+    fromName = cleanName(sender);
+    toName = cleanName(recipient);
     const fromDisplay = displayName(fromName);
     const toDisplay = displayName(toName);
-    $("#homeFrom").textContent = fromDisplay;
-    $("#homeTo").textContent = toDisplay;
-    $("#letterFrom").textContent = fromDisplay;
-    $("#letterTo").textContent = toDisplay;
-    $("#aiSenderName").value = fromName;
-    $("#aiRecipientName").value = toName;
-    localStorage.setItem("nurFrom", fromName);
-    localStorage.setItem("nurTo", toName);
+    setText("#homeFrom", fromDisplay);
+    setText("#homeTo", toDisplay);
+    setText("#letterFrom", fromDisplay);
+    setText("#letterTo", toDisplay);
+    if ($("#aiSenderName")) $("#aiSenderName").value = fromName;
+    if ($("#aiRecipientName")) $("#aiRecipientName").value = toName;
+    if (fromName) localStorage.setItem("nurFrom", fromName); else localStorage.removeItem("nurFrom");
+    if (toName) localStorage.setItem("nurTo", toName); else localStorage.removeItem("nurTo");
     applyLanguage(false);
     updateUrl();
   }
@@ -265,16 +281,24 @@
 
   function applyLanguage(render = true) {
     document.documentElement.lang = lang;
-    document.title = `${t("title")} · ${displayName(toName)}`;
+    document.title = displayName(toName) ? `${t("title")} · ${displayName(toName)}` : t("title");
     $("#languageButton").textContent = lang.toUpperCase();
     $$('[data-lang]').forEach(button => button.classList.toggle("is-active", button.dataset.lang === lang));
     $(".brand-card h1").innerHTML = t("brand");
-    $(".brand-copy").innerHTML = t("brandCopy").replace("{to}", `<strong id="homeTo">${escapeHtml(displayName(toName))}</strong>`);
+    const brandCopy = $(".brand-copy");
+    brandCopy.innerHTML = displayName(toName)
+      ? t("brandCopyPersonal").replace("{to}", `<strong id="homeTo">${escapeHtml(displayName(toName))}</strong>`)
+      : escapeHtml(t("brandCopy"));
+    const senderLine = $(".sender-line");
     setText(".sender-line", "");
-    $(".sender-line").append(`${t("from")} `);
-    const senderStrong = document.createElement("strong"); senderStrong.id = "homeFrom"; senderStrong.textContent = displayName(fromName); $(".sender-line").append(senderStrong);
-    setText("#openStoryButton > span:last-child", t("open"));
+    senderLine.hidden = !displayName(fromName);
+    if (displayName(fromName)) {
+      senderLine.append(`${t("from")} `);
+      const senderStrong = document.createElement("strong"); senderStrong.id = "homeFrom"; senderStrong.textContent = displayName(fromName); senderLine.append(senderStrong);
+    }
+    setText("#openStoryButton > span:last-child", namesReady() ? t("open") : t("create"));
     $("#aiOpenHome").innerHTML = `<span>✦</span> ${t("create")}`;
+    $("#aiOpenHome").hidden = !namesReady();
     const freeSpans = $$(".free-note span"); if (freeSpans[0]) freeSpans[0].textContent = t("free"); if (freeSpans[1]) freeSpans[1].textContent = t("full");
     setText("#weatherText", t("weather"));
     setText("#nextLetter", t("next")); $("#nextLetter").insertAdjacentHTML("beforeend", " <span>→</span>");
@@ -309,7 +333,15 @@
     return String(value).replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
   }
 
+  function ensureNames() {
+    if (namesReady()) return true;
+    openPanel(layers.ai);
+    requestAnimationFrame(() => (fromName ? $("#aiRecipientName") : $("#aiSenderName"))?.focus());
+    return false;
+  }
+
   function openStory() {
+    if (!ensureNames()) return;
     if (storyOpened) return;
     storyOpened = true;
     haptic([12, 35, 18]);
@@ -337,6 +369,7 @@
   }
 
   function renderLetter() {
+    if (!ensureNames()) return;
     const entry = currentEntry();
     if (!entry || !canAccess(entry)) { openPaywall(); return; }
     const position = entry.shared ? "✦" : String(entry.id).padStart(2, "0");
@@ -369,6 +402,7 @@
     if (!canAccess(letterDeck[index])) return openPaywall();
     currentIndex = index;
     closePanel(layers.library);
+    if (!ensureNames()) return;
     if (!storyOpened) openStory(); else renderLetter();
   }
 
@@ -461,7 +495,7 @@
     const sender = cleanName($("#aiSenderName").value) || fromName;
     const recipient = cleanName($("#aiRecipientName").value) || toName;
     if (!value || value.length < 12 || containsForbidden(value)) return showSafety(t("safety"));
-    if (containsForbidden(sender) || containsForbidden(recipient)) return showSafety(t("namesSafety"));
+    if (!sender || !recipient || containsForbidden(sender) || containsForbidden(recipient)) return showSafety(t("namesSafety"));
     setNames(sender, recipient);
     sharedMessage = value;
     letterDeck = [{ id: "shared", category: "warm", shared: true, ru: value, en: value, fr: value }, ...LETTERS];
@@ -588,7 +622,7 @@
   const weatherMap={0:["☀","Clear"],1:["◐","Mostly clear"],2:["☁","Cloudy"],3:["☁","Overcast"],45:["≋","Fog"],48:["≋","Fog"],51:["☂","Drizzle"],53:["☂","Drizzle"],55:["☂","Drizzle"],61:["☂","Rain"],63:["☂","Rain"],65:["☂","Heavy rain"],71:["❄","Snow"],73:["❄","Snow"],75:["❄","Snow"],80:["☂","Showers"],81:["☂","Showers"],82:["☂","Showers"],95:["ϟ","Storm"]};
   async function enableWeather(){if(!navigator.geolocation){showToast(t("weatherFail"));return;}$("#weatherText").textContent="…";navigator.geolocation.getCurrentPosition(async position=>{try{const {latitude,longitude}=position.coords;const url=`https://api.open-meteo.com/v1/forecast?latitude=${latitude.toFixed(3)}&longitude=${longitude.toFixed(3)}&current=temperature_2m,weather_code,is_day&timezone=auto`;const response=await fetch(url);if(!response.ok)throw new Error();const data=await response.json();const code=Number(data.current?.weather_code||0);const weather=weatherMap[code]||["◐","Weather"];$("#weatherIcon").textContent=weather[0];$("#weatherText").textContent=`${Math.round(data.current.temperature_2m)}°`;weatherEnabled=true;localStorage.setItem("nurWeather","on");$("#weatherToggle").classList.add("is-active");$("#weatherState").textContent=`${Math.round(data.current.temperature_2m)}°`;if([51,53,55,61,63,65,80,81,82,95].includes(code)){rainScene.setEnabled(true);rainScene.setIntensity(code>=63?1:.75);}document.body.dataset.weather=String(code);}catch{showToast(t("weatherFail"));$("#weatherText").textContent=t("weather");}},()=>{showToast(t("locationDenied"),3300);$("#weatherText").textContent=t("weather");},{enableHighAccuracy:false,timeout:9000,maximumAge:30*60*1000});}
 
-  async function generatePostcard(){const entry=currentEntry();if(!canAccess(entry))return openPaywall();const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1920;const ctx=canvas.getContext("2d");const image=new Image();image.src=backgroundUrl||"assets/campfire-lake.png";try{await image.decode();const scale=Math.max(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight);const w=image.naturalWidth*scale,h=image.naturalHeight*scale;ctx.drawImage(image,(canvas.width-w)/2,(canvas.height-h)/2,w,h);}catch{ctx.fillStyle="#302335";ctx.fillRect(0,0,canvas.width,canvas.height);}const gradient=ctx.createLinearGradient(0,0,0,canvas.height);gradient.addColorStop(0,"rgba(20,18,28,.3)");gradient.addColorStop(.42,"rgba(26,19,28,.46)");gradient.addColorStop(1,"rgba(15,11,18,.88)");ctx.fillStyle=gradient;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#f1b8cb";ctx.font="700 24px system-ui";ctx.letterSpacing="6px";ctx.fillText("НУРПИСЬМО",90,130);ctx.fillStyle="#fff8ed";ctx.font="600 66px Georgia";ctx.fillText(`${t("for")} ${displayName(toName)}`,90,270);ctx.strokeStyle="rgba(255,238,229,.38)";ctx.beginPath();ctx.moveTo(90,316);ctx.lineTo(990,316);ctx.stroke();ctx.fillStyle="#fffaf2";ctx.font="600 55px Georgia";wrapCanvasText(ctx,entryText(entry),90,440,900,78);ctx.fillStyle="#f0c5d3";ctx.font="italic 600 49px Georgia";ctx.textAlign="right";ctx.fillText(`${t("from")} ${displayName(fromName)}`,990,1765);ctx.textAlign="left";const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png",.95));const file=new File([blob],"nur-letter.png",{type:"image/png"});try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:t("title")});return;}}catch(error){if(error.name==="AbortError")return;}const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="nur-letter.png";link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);showToast(t("downloadReady"));}
+  async function generatePostcard(){const entry=currentEntry();if(!canAccess(entry))return openPaywall();const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1920;const ctx=canvas.getContext("2d");const image=new Image();image.src=backgroundUrl||"assets/campfire-lake.png";try{await image.decode();const scale=Math.max(canvas.width/image.naturalWidth,canvas.height/image.naturalHeight);const w=image.naturalWidth*scale,h=image.naturalHeight*scale;ctx.drawImage(image,(canvas.width-w)/2,(canvas.height-h)/2,w,h);}catch{ctx.fillStyle="#302335";ctx.fillRect(0,0,canvas.width,canvas.height);}const gradient=ctx.createLinearGradient(0,0,0,canvas.height);gradient.addColorStop(0,"rgba(20,18,28,.3)");gradient.addColorStop(.42,"rgba(26,19,28,.46)");gradient.addColorStop(1,"rgba(15,11,18,.88)");ctx.fillStyle=gradient;ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#f1b8cb";ctx.font="700 24px system-ui";ctx.letterSpacing="6px";ctx.fillText("GLOWLETTER",90,130);ctx.fillStyle="#fff8ed";ctx.font="600 66px Georgia";ctx.fillText(`${t("for")} ${displayName(toName)}`,90,270);ctx.strokeStyle="rgba(255,238,229,.38)";ctx.beginPath();ctx.moveTo(90,316);ctx.lineTo(990,316);ctx.stroke();ctx.fillStyle="#fffaf2";ctx.font="600 55px Georgia";wrapCanvasText(ctx,entryText(entry),90,440,900,78);ctx.fillStyle="#f0c5d3";ctx.font="italic 600 49px Georgia";ctx.textAlign="right";ctx.fillText(`${t("from")} ${displayName(fromName)}`,990,1765);ctx.textAlign="left";const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/png",.95));const file=new File([blob],"glow-letter.png",{type:"image/png"});try{if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:t("title")});return;}}catch(error){if(error.name==="AbortError")return;}const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="glow-letter.png";link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);showToast(t("downloadReady"));}
   function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight){const words=text.split(/\s+/);let line="";let currentY=y;for(const word of words){const test=`${line}${word} `;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line.trim(),x,currentY);line=`${word} `;currentY+=lineHeight;if(currentY>1570)break;}else line=test;}if(line&&currentY<=1570)ctx.fillText(line.trim(),x,currentY);}
 
   function speakLetter(){if(!("speechSynthesis" in window))return;const button=$("#speakButton");if(speechSynthesis.speaking){speechSynthesis.cancel();button.textContent=`◖ ${t("read")}`;return;}const utterance=new SpeechSynthesisUtterance(entryText(currentEntry()));utterance.lang=lang==="ru"?"ru-RU":lang==="fr"?"fr-FR":"en-US";utterance.rate=.9;utterance.pitch=1;utterance.onend=()=>button.textContent=`◖ ${t("read")}`;button.textContent=`■ ${t("stop")}`;speechSynthesis.speak(utterance);}
@@ -624,12 +658,16 @@
   async function init(){
     if(LETTERS.length!==50)console.warn(`Expected 50 letters, received ${LETTERS.length}`);
     audio.volume=Number(localStorage.getItem("nurVolume")||.62);
+    bindEvents();setNames(fromName,toName);applyLanguage();renderLibrary();requestNativeEntitlement();
+    if("serviceWorker" in navigator&&location.protocol.startsWith("http")&&location.hostname!=="appassets.androidplatform.net"){
+      const registerServiceWorker=()=>navigator.serviceWorker.register("sw.js?v=5").catch(()=>{});
+      if(document.readyState==="complete")registerServiceWorker();else addEventListener("load",registerServiceWorker,{once:true});
+    }
     try{const savedAudio=await loadMedia("audio");if(savedAudio?.blob){customAudioBlob=savedAudio.blob;$("#customTrackName").textContent=savedAudio.name||"Custom audio";}else if(selectedTrack===3)selectedTrack=0;}catch{if(selectedTrack===3)selectedTrack=0;}
     $$('[data-track]').forEach(option=>option.classList.toggle("is-active",Number(option.dataset.track)===selectedTrack||(selectedTrack===3&&option.id==="customTrackButton")));
-    createAtmosphere();await setupBackground();bindEvents();setNames(fromName,toName);applyLanguage();renderLibrary();requestNativeEntitlement();
+    createAtmosphere();await setupBackground();
     if(params.get("compose")==="1")openPanel(layers.ai);else if(params.get("library")==="1")openPanel(layers.library);
     if(weatherEnabled&&navigator.permissions){try{const permission=await navigator.permissions.query({name:"geolocation"});if(permission.state==="granted")enableWeather();}catch{}}
-    if("serviceWorker" in navigator&&location.protocol.startsWith("http"))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
   }
 
   init();

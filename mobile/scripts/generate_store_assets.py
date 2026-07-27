@@ -77,7 +77,7 @@ def make_feature_graphic(source: Image.Image) -> Image.Image:
     draw = ImageDraw.Draw(composed)
     title_font = find_font(64, bold=True)
     subtitle_font = find_font(27, bold=False)
-    draw.text((64, 165), "НурПисьмо", font=title_font, fill=(255, 247, 235, 255), stroke_width=1, stroke_fill=(70, 32, 48, 170))
+    draw.text((64, 165), "GlowLetter", font=title_font, fill=(255, 247, 235, 255), stroke_width=1, stroke_fill=(70, 32, 48, 170))
     draw.text((67, 250), "Тёплые слова, которые хочется сохранить", font=subtitle_font, fill=(255, 226, 234, 242))
     draw.rounded_rectangle((66, 314, 282, 362), radius=24, fill=(197, 104, 139, 225))
     button_font = find_font(21, bold=True)

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">НурПисьмо: Тёплые слова</string>
+    <string name="app_name">GlowLetter</string>
     <string name="location_permission_reason">Разрешите приблизительное местоположение, чтобы показать погоду рядом с вами. Точные координаты приложению не нужны.</string>
 </resources>
-

@@ -5,19 +5,19 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-src 'none'; child-src 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://api.open-meteo.com https://*.workers.dev; manifest-src 'self'; worker-src 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#211a27" />
-  <meta name="description" content="НурПисьмо — атмосферные персональные письма, умный редактор и 50 тёплых текстов." />
-  <meta property="og:title" content="НурПисьмо · Тёплые слова" />
+  <meta name="description" content="GlowLetter — атмосферные персональные письма, умный редактор и 50 тёплых текстов." />
+  <meta property="og:title" content="GlowLetter · Тёплые слова" />
   <meta property="og:description" content="Иногда одно письмо говорит больше, чем сотня сообщений." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/campfire-lake.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <title>НурПисьмо · Тёплые слова</title>
-  <link rel="manifest" href="manifest.webmanifest" />
+  <title>GlowLetter · Тёплые слова</title>
+  <link rel="manifest" href="manifest.webmanifest?v=5" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <div class="app" id="app">
@@ -48,17 +48,17 @@
     <main>
       <section class="home-screen" id="homeScreen" aria-label="Главный экран">
         <div class="brand-card">
-          <p class="brand-kicker">НУРПИСЬМО</p>
+          <p class="brand-kicker">GLOWLETTER</p>
           <h1>Тёплые слова<br /><em>находят путь</em></h1>
-          <p class="brand-copy">Вечер у озера, живой дождь и письмо, созданное именно для <strong id="homeTo">Айши</strong>.</p>
+          <p class="brand-copy">Вечер у озера, живой дождь и слова, которые хочется сохранить.</p>
         </div>
         <div class="home-bottom">
-          <p class="sender-line">от <strong id="homeFrom">Ислама</strong></p>
+          <p class="sender-line" hidden></p>
           <button class="seal-button" id="openStoryButton" type="button">
             <span class="seal-mark" aria-hidden="true">♡</span>
-            <span>Открыть письмо</span>
+            <span>Создать своё письмо</span>
           </button>
-          <button class="smart-link" id="aiOpenHome" type="button"><span>✦</span> Создать своё письмо</button>
+          <button class="smart-link" id="aiOpenHome" type="button" hidden><span>✦</span> Создать своё письмо</button>
           <p class="free-note"><span>10 писем бесплатно</span><i></i><span>полная коллекция — 4,99 €</span></p>
         </div>
       </section>
@@ -73,14 +73,14 @@
         <article class="letter" id="letter" aria-labelledby="letterTitle">
           <div class="paper-edge" aria-hidden="true"></div>
           <header class="letter-meta">
-            <span>для <strong id="letterTo">Айши</strong></span>
+            <span>для <strong id="letterTo">получателя</strong></span>
             <span id="letterNumber">01 / 50</span>
           </header>
           <h2 id="letterTitle">Несколько слов для тебя</h2>
           <p class="letter-text" id="letterText"></p>
           <footer class="signature">
             <span>С теплом,</span>
-            <strong id="letterFrom">Ислам</strong>
+            <strong id="letterFrom">отправитель</strong>
           </footer>
           <button class="paper-copy" id="copyLetter" type="button"><span>▣</span> Копировать текст</button>
         </article>
@@ -116,8 +116,8 @@
         <form id="aiForm">
           <div class="name-route" aria-hidden="true"><span>ОТ</span><i>✦</i><span>ДЛЯ</span></div>
           <div class="simple-form">
-            <label><span>От кого</span><input id="aiSenderName" maxlength="36" value="Ислам" autocomplete="name" placeholder="Ислам или Амина (дочь)" /></label>
-            <label><span>Для кого</span><input id="aiRecipientName" maxlength="36" value="Айша" autocomplete="off" placeholder="Айша или Мама" /></label>
+            <label><span>От кого</span><input id="aiSenderName" maxlength="36" autocomplete="name" placeholder="Ваше имя или Амина (дочь)" /></label>
+            <label><span>Для кого</span><input id="aiRecipientName" maxlength="36" autocomplete="off" placeholder="Имя или Мама" /></label>
           </div>
           <p class="form-hint">Можно написать роль прямо рядом с именем: «Амина (дочь)» → «Мама». Редактор сам подберёт смысл и обращение.</p>
           <button class="generate-button" id="generateButton" type="submit"><span class="generate-spark">✦</span><span class="generate-label">Создать красивое письмо</span><i>→</i></button>
@@ -223,7 +223,7 @@
           <button id="settingsPurchase" type="button">Открыть за <span class="price-label">4,99 €</span></button>
         </div>
 
-        <button class="install-button" id="installButton" type="button" hidden>＋ Установить НурПисьмо</button>
+        <button class="install-button" id="installButton" type="button" hidden>＋ Установить GlowLetter</button>
         <div class="legal-links"><button class="go-home" type="button">На главный экран</button><a href="privacy.html" target="_blank" rel="noopener">Конфиденциальность</a><a href="mailto:ggooglov9@gmail.com">Поддержка</a></div>
       </section>
     </div>
@@ -233,7 +233,7 @@
       <section class="paywall-card" role="dialog" aria-modal="true" aria-labelledby="paywallTitle">
         <button class="panel-close paywall-close" id="paywallClose" type="button" aria-label="Закрыть">×</button>
         <div class="paywall-orbit" aria-hidden="true"><span>✦</span><i>♡</i><b>☾</b></div>
-        <p class="panel-eyebrow">НУРПИСЬМО · ПОЛНЫЙ ДОСТУП</p>
+        <p class="panel-eyebrow">GLOWLETTER · ПОЛНЫЙ ДОСТУП</p>
         <h2 id="paywallTitle">Ещё 40 писем<br /><em>для важных людей</em></h2>
         <p>Первые 10 остаются бесплатными. Полная коллекция, открытки и все будущие тексты открываются навсегда.</p>
         <ul><li>50 персональных писем</li><li>восстановление покупки</li><li>обновления коллекции</li></ul>
@@ -246,8 +246,8 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <audio id="nasheed" loop preload="none"></audio>
   </div>
-  <script src="config.js"></script>
-  <script src="letters.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=5"></script>
+  <script src="letters.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

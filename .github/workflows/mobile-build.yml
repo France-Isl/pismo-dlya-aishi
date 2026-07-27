@@ -94,8 +94,8 @@ jobs:
           set -euo pipefail
           NOTES='Preview only. The APK is debug-signed for testing. The AAB is intentionally unsigned and cannot be submitted to production until Play App Signing/upload-key and the purchase-verification backend are configured.'
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "НурПисьмо v1.0.0 preview" --notes "$NOTES" --prerelease
+            gh release edit "$TAG" --title "GlowLetter v1.0.0 preview" --notes "$NOTES" --prerelease
           else
-            gh release create "$TAG" --target "$GITHUB_SHA" --title "НурПисьмо v1.0.0 preview" --notes "$NOTES" --prerelease
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "GlowLetter v1.0.0 preview" --notes "$NOTES" --prerelease
           fi
           gh release upload "$TAG" mobile/dist/* --clobber

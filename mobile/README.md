@@ -1,4 +1,4 @@
-# НурПисьмо: мобильная упаковка
+# GlowLetter: мобильная упаковка
 
 Этот каталог превращает статическое приложение в Android WebView-приложение и содержит заготовку iOS на SwiftUI/WKWebView. Android package/application ID: `com.franceisl.nurpismo`. Веб-файлы при сборке берутся из актуального корня `aisha-letter`, поэтому их не нужно копировать вручную.
 

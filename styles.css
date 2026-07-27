@@ -203,7 +203,7 @@ input:focus, textarea:focus, select:focus { border-color: #c47b97; box-shadow: 0
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* НурПисьмо v3 — продуктовые экраны и атмосферные слои */
+/* GlowLetter v5 — продуктовые экраны и атмосферные слои */
 .chair-motion { position: fixed; z-index: -5; inset: -3%; pointer-events: none; background-image: var(--scene-image, url("assets/campfire-lake.png")); background-size: cover; background-position: 63% center; filter: saturate(.92) contrast(1.03); will-change: transform; }
 .chair-motion-left { clip-path: polygon(5% 38%, 39% 38%, 39% 96%, 4% 96%); transform-origin: 25% 91%; animation: chair-rock-left 5.8s ease-in-out infinite alternate; }
 .chair-motion-right { clip-path: polygon(59% 34%, 96% 34%, 97% 98%, 58% 98%); transform-origin: 79% 92%; animation: chair-rock-right 6.4s ease-in-out infinite alternate-reverse; }

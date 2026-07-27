@@ -1,4 +1,4 @@
-# Backend НурПисьмо
+# Backend GlowLetter
 
 Cloudflare Worker выполняет две независимые задачи:
 
