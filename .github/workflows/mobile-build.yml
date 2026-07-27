@@ -70,17 +70,25 @@ jobs:
           mkdir -p mobile/dist
           cp mobile/android/app/build/outputs/apk/debug/app-debug.apk \
             mobile/dist/NurPismo-v1.0.0-preview-debug.apk
+          cp mobile/android/app/build/outputs/apk/debug/app-debug.apk \
+            mobile/dist/GlowLetter-v1.0.0-preview-debug.apk
           cp mobile/android/app/build/outputs/bundle/release/app-release.aab \
             mobile/dist/NurPismo-v1.0.0-preview-unsigned.aab
+          cp mobile/android/app/build/outputs/bundle/release/app-release.aab \
+            mobile/dist/GlowLetter-v1.0.0-preview-unsigned.aab
           cp mobile/store-assets/nurpismo-play-icon-512.png \
             mobile/dist/NurPismo-play-icon-512.png
+          cp mobile/store-assets/nurpismo-play-icon-512.png \
+            mobile/dist/GlowLetter-play-icon-512.png
           cp mobile/store-assets/nurpismo-feature-1024x500.png \
             mobile/dist/NurPismo-feature-1024x500.png
+          cp mobile/store-assets/nurpismo-feature-1024x500.png \
+            mobile/dist/GlowLetter-feature-1024x500.png
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nurpismo-v1.0.0-preview
+          name: glowletter-v1.0.0-preview
           path: mobile/dist/*
           if-no-files-found: error
           retention-days: 30
@@ -94,7 +102,7 @@ jobs:
           set -euo pipefail
           NOTES='Preview only. The APK is debug-signed for testing. The AAB is intentionally unsigned and cannot be submitted to production until Play App Signing/upload-key and the purchase-verification backend are configured.'
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "GlowLetter v1.0.0 preview" --notes "$NOTES" --prerelease
+            gh release edit "$TAG" --target "$GITHUB_SHA" --title "GlowLetter v1.0.0 preview" --notes "$NOTES" --prerelease
           else
             gh release create "$TAG" --target "$GITHUB_SHA" --title "GlowLetter v1.0.0 preview" --notes "$NOTES" --prerelease
           fi
