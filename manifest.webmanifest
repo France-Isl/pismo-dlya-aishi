@@ -1,0 +1,16 @@
+{
+  "name": "Письмо, которое нашло тебя",
+  "short_name": "Тёплое письмо",
+  "description": "Живое романтическое письмо с уютной историей.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8dbe8",
+  "theme_color": "#d8719f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
+
