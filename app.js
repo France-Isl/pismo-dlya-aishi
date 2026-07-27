@@ -1,4 +1,4 @@
-const messages = [
+const baseMessages = [
   "Забыть можно многое, но только не твои красивые глаза — они остаются в памяти даже тогда, когда тебя нет рядом.",
   "Знаешь, я прекрасно умею плавать, но каждый раз, когда смотрю в твои глаза, всё равно тону.",
   "Твоя улыбка обладает удивительной силой: появляется на твоём лице, а счастливее почему-то становлюсь я.",
@@ -25,80 +25,93 @@ const messages = [
   "Возможно, я не всегда умею красиво выражать чувства, но одно знаю точно: время рядом с тобой для меня бесценно."
 ];
 
-const scenes = [
-  { animal: "cat", recipient: "bear", name: "Лунное озеро", icon: "☾", title: "Розовый котёнок несёт письмо к тебе" },
-  { animal: "bear", recipient: "bunny", name: "Тихий дождь", icon: "☂", title: "Медвежонок бережёт письмо от дождя" },
-  { animal: "bunny", recipient: "cat", name: "Тропа среди гор", icon: "△", title: "Кролик прошёл горную тропу ради тебя" },
-  { animal: "fox", recipient: "panda", name: "Звёздный лес", icon: "✦", title: "Лисёнок нашёл тебя среди звёзд" },
-  { animal: "panda", recipient: "otter", name: "Розовый рассвет", icon: "☼", title: "Маленькая панда принесла тёплые слова" },
-  { animal: "otter", recipient: "bear", name: "Река светлячков", icon: "⋆", title: "Выдра переплыла реку с письмом" }
-];
-
-const animalNames = {
-  cat: "розовый котёнок",
-  bear: "медвежонок",
-  bunny: "кролик",
-  fox: "лисёнок",
-  panda: "маленькая панда",
-  otter: "выдра"
-};
-
 const tracks = [
   { name: "Мураджан · slowed", source: "audio/track-1.mp3", fallback: "audio/track-1.b64" },
   { name: "Азан · nasheed", source: "audio/track-2.mp3", fallback: "audio/track-2.b64" },
   { name: "Лучшие нашиды", source: "audio/track-3.mp3", fallback: "audio/track-3.b64" }
 ];
 
+const relationshipLabels = {
+  mother: "мама", father: "папа", wife: "жена", husband: "муж", daughter: "дочь", son: "сын",
+  grandmother: "бабушка", grandfather: "дедушка", sister: "сестра", brother: "брат",
+  relative: "родной человек", teacher: "учитель"
+};
+
+const senderRoleLabels = {
+  son: "сын", daughter: "дочь", husband: "муж", wife: "жена", parent: "родитель",
+  sibling: "брат или сестра", relative: "родственник", student: "ученик"
+};
+
+const toneLabels = {
+  grateful: "благодарное и искреннее", warm: "тёплое и спокойное", supportive: "поддерживающее",
+  apology: "искреннее извинение", celebration: "поздравительное к важному дню", dua: "с добрым пожеланием и уместным дуа"
+};
+
+const lengthLabels = { short: "70–90 слов", medium: "110–150 слов", long: "170–220 слов" };
+
+const blockedRules = [
+  { reason: "Темы 18+ и откровенное содержание здесь строго запрещены.", re: /\b(секс\w*|эрот\w*|порн\w*|интим\w*|обнаж\w*|генитал\w*|оргазм\w*|фетиш\w*|возбужд\w*|мастурб\w*|проститу\w*|sex\w*|porn\w*|erotic\w*|nude\w*|naked\w*)\b/iu },
+  { reason: "Нельзя создавать тексты про алкоголь, наркотики или азартные игры.", re: /\b(алкогол\w*|водк\w*|коньяк\w*|пиво\w*|вино\b|наркот\w*|кокаин\w*|героин\w*|марихуан\w*|казино\w*|азарт\w*|букмекер\w*|ставк\w*)\b/iu },
+  { reason: "Нельзя создавать унижающие, оскорбительные или жестокие тексты.", re: /\b(унизи\w*|оскорб\w*|ненавиж\w*|отомст\w*|убить\w*|избить\w*|шантаж\w*|угрож\w*)\b/iu },
+  { reason: "Тайные и запретные отношения не поддерживаются.", re: /\b(любовниц\w*|измен\w*|внебрач\w*|тайн\w*\s+свидан\w*|скрыт\w*\s+отношен\w*)\b/iu }
+];
+
+const nonSpouseRomance = /\b(страст\w*|соблазн\w*|поцелу\w*|романтическ\w*\s+свидан\w*)\b/iu;
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const params = new URLSearchParams(location.search);
+
 let fromName = cleanName(params.get("from")) || cleanName(localStorage.getItem("warmLetterFrom")) || "Ислам";
 let toName = cleanName(params.get("to")) || cleanName(localStorage.getItem("warmLetterTo")) || "Айша";
 let recipientGender = (params.get("gender") || localStorage.getItem("warmLetterGender")) === "m" ? "m" : "f";
-let currentIndex = Math.min(Number(localStorage.getItem("warmLetterIndex") || 0), messages.length - 1);
+let sharedMessage = decodeSharedMessage(params.get("msg"));
+let letterDeck = sharedMessage ? [sharedMessage, ...baseMessages] : [...baseMessages];
+let currentIndex = sharedMessage ? 0 : Math.min(Number(localStorage.getItem("warmLetterIndex") || 0), letterDeck.length - 1);
 let selectedTrack = Math.min(Number(localStorage.getItem("warmLetterTrack") || 0), 3);
-let isPlaying = false;
-let storyStarted = false;
-let toastTimer;
-let customAudioBlob = null;
 let currentObjectUrl = null;
+let customAudioBlob = null;
+let isPlaying = false;
+let storyOpened = false;
+let toastTimer;
+let aiWorker = null;
+let aiResolve = null;
+let aiReject = null;
+let generatedMessage = "";
 
 const audio = $("#nasheed");
-const intro = $("#intro");
-const story = $("#story");
-const sceneCard = $("#sceneCard");
-const courier = $("#courier");
-const recipient = $("#recipient");
-const acceptButton = $("#acceptButton");
-const letterLayer = $("#letterLayer");
-const sheetLayer = $("#sheetLayer");
+const homeScreen = $("#homeScreen");
+const letterStage = $("#letterStage");
+const aiLayer = $("#aiLayer");
+const settingsLayer = $("#settingsLayer");
 
 function cleanName(value) {
-  return String(value || "").replace(/[<>]/g, "").trim().slice(0, 28);
+  return String(value || "").replace(/[<>\n\r]/g, "").trim().slice(0, 28);
+}
+
+function encodeSharedMessage(text) {
+  try {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+    return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+  } catch { return ""; }
+}
+
+function decodeSharedMessage(encoded) {
+  if (!encoded || encoded.length > 12000) return "";
+  try {
+    const padded = encoded.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(encoded.length / 4) * 4, "=");
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    const text = new TextDecoder().decode(bytes).trim();
+    return text.length <= 1800 && !checkSafety(text).blocked ? text : "";
+  } catch { return ""; }
 }
 
 function personalized(text) {
   let result = text.replaceAll("Айша", toName);
-  if (recipientGender === "m") {
-    result = result.replaceAll("ты прекрасна", "ты прекрасен").replaceAll("ты очень дорога мне", "ты очень дорог мне");
-  }
+  if (recipientGender === "m") result = result.replaceAll("ты прекрасна", "ты прекрасен").replaceAll("ты очень дорога мне", "ты очень дорог мне");
   return result;
-}
-
-function setNames(from, to) {
-  fromName = cleanName(from) || "Ислам";
-  toName = cleanName(to) || "Айша";
-  $("#headerTo").textContent = toName;
-  $("#introTo").textContent = toName;
-  $("#introFrom").textContent = fromName;
-  $("#paperTo").textContent = toName;
-  $("#paperFrom").textContent = fromName;
-  $("#fromInput").value = fromName;
-  $("#toInput").value = toName;
-  document.title = `Письмо: ${toName} — от ${fromName}`;
-  localStorage.setItem("warmLetterFrom", fromName);
-  localStorage.setItem("warmLetterTo", toName);
-  updateUrl();
 }
 
 function updateUrl() {
@@ -106,154 +119,289 @@ function updateUrl() {
   url.searchParams.set("from", fromName);
   url.searchParams.set("to", toName);
   url.searchParams.set("gender", recipientGender);
+  if (sharedMessage) url.searchParams.set("msg", encodeSharedMessage(sharedMessage));
+  else url.searchParams.delete("msg");
   history.replaceState({}, "", url);
 }
 
-function makeAtmosphere() {
-  const stars = $("#stars");
-  for (let i = 0; i < 44; i++) {
-    const star = document.createElement("i");
-    star.className = "star";
-    star.style.left = `${3 + Math.random() * 94}%`;
-    star.style.top = `${4 + Math.random() * 58}%`;
-    star.style.setProperty("--twinkle", `${2.5 + Math.random() * 4}s`);
-    star.style.setProperty("--delay", `${-Math.random() * 5}s`);
-    stars.append(star);
+function setNames(from, to) {
+  fromName = cleanName(from) || "Ислам";
+  toName = cleanName(to) || "Айша";
+  $("#homeFrom").textContent = fromName;
+  $("#letterFrom").textContent = fromName;
+  $("#letterTo").textContent = toName;
+  $("#fromInput").value = fromName;
+  $("#toInput").value = toName;
+  $("#aiSenderName").value = fromName;
+  $("#aiRecipientName").value = toName;
+  document.title = `Письмо: ${toName} — от ${fromName}`;
+  localStorage.setItem("warmLetterFrom", fromName);
+  localStorage.setItem("warmLetterTo", toName);
+  updateUrl();
+}
+
+async function setupBackground() {
+  try {
+    const response = await fetch("assets/campfire-lake.png", { method: "HEAD", cache: "no-store" });
+    if (response.ok) return;
+    const fallback = await fetch("assets/campfire-lake.png.b64");
+    if (!fallback.ok) return;
+    const blob = base64ToBlob((await fallback.text()).trim(), "image/png");
+    const url = URL.createObjectURL(blob);
+    document.documentElement.style.setProperty("--scene-image", `url("${url}")`);
+  } catch {}
+}
+
+function createAtmosphere() {
+  const leafColors = ["#b7634b", "#d48a59", "#d59aa8", "#8c684c", "#d6a75c"];
+  for (let i = 0; i < 18; i++) {
+    const leaf = document.createElement("i");
+    leaf.className = "leaf";
+    leaf.style.setProperty("--left", `${-5 + Math.random() * 106}%`);
+    leaf.style.setProperty("--size", `${8 + Math.random() * 11}px`);
+    leaf.style.setProperty("--duration", `${10 + Math.random() * 12}s`);
+    leaf.style.setProperty("--delay", `${-Math.random() * 19}s`);
+    leaf.style.setProperty("--opacity", `${.22 + Math.random() * .5}`);
+    leaf.style.setProperty("--leaf-color", leafColors[Math.floor(Math.random() * leafColors.length)]);
+    $("#leaves").append(leaf);
   }
-  const rain = $("#rain");
-  for (let i = 0; i < 29; i++) {
-    const drop = document.createElement("i");
-    drop.className = "drop";
-    drop.style.left = `${Math.random() * 100}%`;
-    drop.style.setProperty("--speed", `${1.35 + Math.random() * 1.4}s`);
-    drop.style.setProperty("--delay", `${-Math.random() * 3}s`);
-    rain.append(drop);
+  for (let i = 0; i < 14; i++) {
+    const ember = document.createElement("i");
+    ember.className = "ember";
+    ember.style.setProperty("--left", `${58 + Math.random() * 30}%`);
+    ember.style.setProperty("--size", `${1 + Math.random() * 3}px`);
+    ember.style.setProperty("--duration", `${3.2 + Math.random() * 3}s`);
+    ember.style.setProperty("--delay", `${-Math.random() * 5}s`);
+    ember.style.setProperty("--drift", `${-35 + Math.random() * 70}px`);
+    $("#embers").append(ember);
   }
-  const fireflies = $("#fireflies");
-  for (let i = 0; i < 16; i++) {
-    const light = document.createElement("i");
-    light.className = "firefly";
-    light.style.setProperty("--left", `${5 + Math.random() * 90}%`);
-    light.style.setProperty("--bottom", `${9 + Math.random() * 31}%`);
-    light.style.setProperty("--delay", `${-Math.random() * 7}s`);
-    fireflies.append(light);
+  for (let i = 0; i < 20; i++) {
+    const rain = document.createElement("i");
+    rain.className = "rain-line";
+    rain.style.setProperty("--left", `${Math.random() * 100}%`);
+    rain.style.setProperty("--height", `${15 + Math.random() * 24}px`);
+    rain.style.setProperty("--duration", `${1.8 + Math.random() * 1.6}s`);
+    rain.style.setProperty("--delay", `${-Math.random() * 4}s`);
+    $("#rainVeil").append(rain);
   }
 }
 
-function updateScene() {
-  const scene = scenes[currentIndex % scenes.length];
-  courier.className = `animal courier animal-${scene.animal}`;
-  courier.setAttribute("aria-label", `${animalNames[scene.animal]} несёт письмо`);
-  recipient.className = `animal recipient animal-${scene.recipient}`;
-  $("#sceneName").textContent = scene.name;
-  $("#sceneIcon").textContent = scene.icon;
-  $("#deliveryTitle").textContent = scene.title;
-  $("#letterCount").textContent = `Письмо ${currentIndex + 1} из ${messages.length}`;
-  $("#progressBar").style.width = `${((currentIndex + 1) / messages.length) * 100}%`;
-  acceptButton.disabled = true;
-  acceptButton.querySelector("span").textContent = "Письмо уже идёт к тебе";
-  $("#deliveryKicker").textContent = "Письмо уже близко…";
-  sceneCard.classList.remove("delivery-start", "delivery-ready", "hugging");
-  void sceneCard.offsetWidth;
-  sceneCard.classList.add("delivery-start");
-  changeCaption();
-  window.setTimeout(() => {
-    sceneCard.classList.remove("delivery-start");
-    sceneCard.classList.add("delivery-ready");
-    acceptButton.disabled = false;
-    acceptButton.querySelector("span").textContent = "Принять письмо";
-    $("#deliveryKicker").textContent = "Оно пришло именно к тебе";
-  }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 80 : 4600);
+function openStory() {
+  if (storyOpened) return;
+  storyOpened = true;
+  playAudio(true);
+  homeScreen.classList.add("is-leaving");
+  setTimeout(() => {
+    homeScreen.hidden = true;
+    letterStage.hidden = false;
+    letterStage.classList.add("is-entering");
+    renderLetter();
+  }, 650);
 }
 
-function changeCaption() {
+function renderLetter() {
+  $("#letterNumber").textContent = `${String(currentIndex + 1).padStart(2, "0")} / ${letterDeck.length}`;
+  const text = $("#letterText");
+  text.classList.remove("is-changing");
+  void text.offsetWidth;
+  text.textContent = personalized(letterDeck[currentIndex]);
+  text.classList.add("is-changing");
   const captions = [
-    `Пока ты читаешь это, ${fromName} думает о тебе`,
-    `${toName}, это письмо пришло из места, где всегда тепло`,
-    `Иногда письмо знает дорогу лучше слов`,
-    `${toName}, сегодня даже звёзды светят чуть мягче`,
-    `Тебя вспоминают в самых красивых моментах`,
-    `Некоторые чувства говорят очень тихо — но остаются надолго`
+    "Вечер сохранил эти слова для тебя", "У костра даже тишина становится теплее", "Озеро помнит то, что трудно сказать вслух",
+    `${fromName} вложил тепло в каждую строку`, "Пусть эти слова принесут спокойствие", "Некоторые письма находят нас вовремя"
   ];
-  const el = $("#liveCaption");
-  el.classList.add("is-changing");
-  setTimeout(() => {
-    el.textContent = captions[currentIndex % captions.length];
-    el.classList.remove("is-changing");
-  }, 330);
-}
-
-async function beginStory() {
-  if (storyStarted) return;
-  storyStarted = true;
-  intro.classList.add("is-leaving");
-  await playAudio(true);
-  setTimeout(() => {
-    intro.hidden = true;
-    story.hidden = false;
-    story.classList.add("is-entering");
-    updateScene();
-  }, 720);
-}
-
-function openLetter() {
-  $("#paperNumber").textContent = `${String(currentIndex + 1).padStart(2, "0")} / ${messages.length}`;
-  const message = $("#letterMessage");
-  message.textContent = personalized(messages[currentIndex]);
-  message.classList.remove("revealing");
-  void message.offsetWidth;
-  message.classList.add("revealing");
-  letterLayer.classList.add("is-open");
-  letterLayer.setAttribute("aria-hidden", "false");
-  setTimeout(() => $("#nextButton").focus(), 700);
-}
-
-function closeLetter(next = false) {
-  letterLayer.classList.remove("is-open");
-  letterLayer.setAttribute("aria-hidden", "true");
-  if (!next) return;
-  const oldIndex = currentIndex;
-  currentIndex = (currentIndex + 1) % messages.length;
+  $("#stageCaption").textContent = captions[currentIndex % captions.length];
   localStorage.setItem("warmLetterIndex", String(currentIndex));
-  if ((oldIndex + 1) % 3 === 0) {
-    sceneCard.classList.remove("delivery-ready");
-    sceneCard.classList.add("hugging");
-    showToast("Даже маленькие друзья иногда не могут сдержать объятий ♡", 2700);
-    setTimeout(updateScene, 2900);
-  } else {
-    setTimeout(updateScene, 560);
-  }
 }
 
-function showSheet() {
-  sheetLayer.classList.add("is-open");
-  sheetLayer.setAttribute("aria-hidden", "false");
-  setTimeout(() => $("#fromInput").focus(), 350);
+function moveLetter(direction) {
+  currentIndex = (currentIndex + direction + letterDeck.length) % letterDeck.length;
+  renderLetter();
 }
 
-function closeSheet() {
-  sheetLayer.classList.remove("is-open");
-  sheetLayer.setAttribute("aria-hidden", "true");
+function openPanel(layer) {
+  layer.classList.add("is-open");
+  layer.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
 }
 
-function showToast(text, duration = 2200) {
+function closePanel(layer) {
+  layer.classList.remove("is-open");
+  layer.setAttribute("aria-hidden", "true");
+  if (!aiLayer.classList.contains("is-open") && !settingsLayer.classList.contains("is-open")) document.body.style.overflow = "";
+}
+
+function showToast(message, duration = 2300) {
   clearTimeout(toastTimer);
   const toast = $("#toast");
-  toast.textContent = text;
+  toast.textContent = message;
   toast.classList.add("is-visible");
   toastTimer = setTimeout(() => toast.classList.remove("is-visible"), duration);
 }
 
+function normalizeSafetyText(text) {
+  return String(text || "").toLowerCase().replaceAll("ё", "е").replace(/[.*+?^${}()|[\]\\]/g, " ");
+}
+
+function checkSafety(text, relationship = "") {
+  const normalized = normalizeSafetyText(text);
+  for (const rule of blockedRules) if (rule.re.test(normalized)) return { blocked: true, reason: rule.reason };
+  if (!['wife', 'husband'].includes(relationship) && nonSpouseRomance.test(normalized)) {
+    return { blocked: true, reason: "Романтические формулировки доступны только для супругов. Выберите семейное и уважительное содержание." };
+  }
+  return { blocked: false, reason: "" };
+}
+
+function showSafety(reason) {
+  $("#safetyReason").textContent = reason;
+  $("#safetyMessage").hidden = false;
+  $("#generatedCard").hidden = true;
+  $("#generationStatus").hidden = true;
+}
+
+function buildSafeFallback(data) {
+  const openings = {
+    grateful: `${data.name}, хочу от всего сердца поблагодарить тебя.`,
+    warm: `${data.name}, мне давно хотелось сказать тебе несколько простых и тёплых слов.`,
+    supportive: `${data.name}, пусть эти строки напомнят: рядом есть человек, который верит в тебя и желает тебе спокойствия.`,
+    apology: `${data.name}, я искренне прошу прощения за то, чем мог огорчить тебя.`,
+    celebration: `${data.name}, в этот важный день хочу пожелать тебе самого доброго и светлого.`,
+    dua: `${data.name}, пусть Всевышний дарует тебе спокойствие, здоровье и благополучие.`
+  };
+  const middle = data.idea
+    ? `Особенно хочу сказать: ${data.idea.trim().replace(/[!?]+/g, ".").slice(0, 360)}`
+    : "Я ценю твою заботу, терпение и то добро, которым ты делишься каждый день. Такие вещи не всегда замечают сразу, но именно они остаются в сердце надолго.";
+  const closings = [
+    "Спасибо за всё, что ты делаешь. Пусть в твоём сердце будет больше лёгкости, а в доме — мира и тепла.",
+    "Я дорожу тобой и хочу чаще подтверждать это не только словами, но и добрыми поступками.",
+    "Пусть впереди будет много спокойных дней, искренних улыбок и поводов благодарить Всевышнего."
+  ];
+  const extra = data.length === "long" ? " Твоя поддержка учит меня быть внимательнее, терпеливее и благодарнее. Я помню добро, которое получил от тебя, и прошу простить меня за моменты, когда не умел показать это достаточно ясно." : "";
+  return `${openings[data.tone]} ${middle}. ${closings[Math.floor(Math.random() * closings.length)]}${extra}`.replace(/\.\./g, ".");
+}
+
+function getAiData() {
+  return {
+    name: cleanName($("#aiRecipientName").value) || "дорогой человек",
+    relationship: $("#aiRelationship").value,
+    sender: cleanName($("#aiSenderName").value) || fromName,
+    senderRole: $("#aiSenderRole").value,
+    tone: $("#aiTone").value,
+    length: $("#aiLength").value,
+    idea: $("#aiIdea").value.trim()
+  };
+}
+
+function buildAiPrompt(data) {
+  const system = `Ты — редактор искренних семейных писем на русском языке. Пиши уважительно, естественно и тепло, соблюдая исламский адаб и скромность. Строго запрещены темы 18+, эротика, намёки на интимность, грубость, алкоголь, наркотики, азартные игры, ложь, унижение, давление и отношения вне брака. Романтическое содержание допустимо только между супругами. Не приписывай человеку факты, которых нет в запросе. Не давай религиозных постановлений и не выдумывай цитаты. Если уместно дуа, сформулируй его просто, без ложной атрибуции. Верни только готовое письмо без заголовка, пояснений, кавычек и подписи. Объём: ${lengthLabels[data.length]}.`;
+  const user = `Напиши ${toneLabels[data.tone]} письмо. Получатель: ${data.name}; отношение к автору: ${relationshipLabels[data.relationship]}; автор: ${data.sender}; роль автора: ${senderRoleLabels[data.senderRole]}. Что важно передать: ${data.idea || "благодарность, уважение, заботу и добрые пожелания"}. Текст должен звучать лично, но не чрезмерно пафосно.`;
+  return { system, user };
+}
+
+function ensureAiWorker() {
+  if (aiWorker) return aiWorker;
+  aiWorker = new Worker("ai-worker.js", { type: "module" });
+  aiWorker.addEventListener("message", event => {
+    const data = event.data;
+    if (data.type === "progress") {
+      const progress = Math.max(2, Math.min(98, Math.round(data.progress || 0)));
+      $("#statusBar").style.width = `${progress}%`;
+      $("#statusPercent").textContent = `${progress}%`;
+      $("#statusText").textContent = data.label || "Загружаю языковую модель…";
+    } else if (data.type === "ready") {
+      $("#statusBar").style.width = "99%";
+      $("#statusPercent").textContent = "99%";
+      $("#statusText").textContent = "Подбираю тёплые слова…";
+    } else if (data.type === "result") {
+      aiResolve?.(data.text);
+      aiResolve = aiReject = null;
+    } else if (data.type === "error") {
+      aiReject?.(new Error(data.message || "Локальный ИИ недоступен"));
+      aiResolve = aiReject = null;
+    }
+  });
+  aiWorker.addEventListener("error", event => {
+    aiReject?.(new Error(event.message || "Ошибка локального ИИ"));
+    aiResolve = aiReject = null;
+  });
+  return aiWorker;
+}
+
+function askLocalAi(prompt) {
+  return new Promise((resolve, reject) => {
+    aiResolve = resolve;
+    aiReject = reject;
+    ensureAiWorker().postMessage({ type: "generate", ...prompt });
+  });
+}
+
+async function generateLetter() {
+  const data = getAiData();
+  const safety = checkSafety(`${data.idea} ${data.name} ${data.sender}`, data.relationship);
+  $("#safetyMessage").hidden = true;
+  $("#generatedCard").hidden = true;
+  if (safety.blocked) return showSafety(safety.reason);
+
+  const button = $("#generateButton");
+  button.disabled = true;
+  button.querySelector(".generate-label").textContent = "ИИ создаёт письмо…";
+  $("#generationStatus").hidden = false;
+  $("#statusBar").style.width = "2%";
+  $("#statusPercent").textContent = "2%";
+  $("#statusText").textContent = "Проверяю запрос и готовлю модель…";
+
+  let result;
+  try {
+    result = (await askLocalAi(buildAiPrompt(data))).trim();
+  } catch {
+    result = buildSafeFallback(data);
+    showToast("Создан безопасный вариант: локальный ИИ недоступен на этом устройстве", 3800);
+  }
+
+  const outputSafety = checkSafety(result, data.relationship);
+  if (outputSafety.blocked || result.length < 40 || result.length > 2200) {
+    result = buildSafeFallback(data);
+    showToast("Ответ ИИ заменён безопасным вариантом", 3000);
+  }
+  generatedMessage = result.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^['\"«]|['\"»]$/g, "").trim();
+  $("#generatedText").value = generatedMessage;
+  $("#generationStatus").hidden = true;
+  $("#generatedCard").hidden = false;
+  button.disabled = false;
+  button.querySelector(".generate-label").textContent = "Сгенерировать письмо";
+  $("#generatedCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function useGeneratedLetter() {
+  const edited = $("#generatedText").value.trim();
+  const data = getAiData();
+  const safety = checkSafety(edited, data.relationship);
+  if (!edited || safety.blocked) return showSafety(safety.reason || "Письмо не должно быть пустым.");
+  sharedMessage = edited.slice(0, 1800);
+  letterDeck = [sharedMessage, ...baseMessages];
+  currentIndex = 0;
+  const femaleRelations = ["mother", "wife", "daughter", "grandmother", "sister"];
+  recipientGender = femaleRelations.includes(data.relationship) ? "f" : "m";
+  setNames(data.sender, data.name);
+  localStorage.setItem("warmLetterGender", recipientGender);
+  $$('[data-gender]').forEach(option => option.classList.toggle("is-active", option.dataset.gender === recipientGender));
+  closePanel(aiLayer);
+  if (!storyOpened) openStory();
+  else renderLetter();
+  updateUrl();
+  showToast("Письмо добавлено. Его текст сохранён в ссылке ♡", 3100);
+}
+
 function base64ToBlob(base64, mime = "audio/mpeg") {
   const sliceSize = 512 * 1024;
-  const byteArrays = [];
+  const arrays = [];
   for (let offset = 0; offset < base64.length; offset += sliceSize) {
     const binary = atob(base64.slice(offset, offset + sliceSize));
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    byteArrays.push(bytes);
+    arrays.push(bytes);
   }
-  return new Blob(byteArrays, { type: mime });
+  return new Blob(arrays, { type: mime });
 }
 
 async function builtinTrackBlob(index) {
@@ -273,18 +421,15 @@ async function setAudioSource(index) {
   audio.load();
 }
 
-async function playAudio(quietFailure = false) {
+async function playAudio(quiet = false) {
   try {
     if (!audio.src) await setAudioSource(selectedTrack);
     await audio.play();
     isPlaying = true;
     $("#soundButton").classList.add("is-playing");
     $("#soundButton").setAttribute("aria-pressed", "true");
-    $("#soundButton").setAttribute("aria-label", "Выключить музыку");
-    $("#volumeWrap").classList.add("is-visible");
-  } catch (error) {
-    if (!quietFailure) showToast(selectedTrack === 3 ? "Выберите свой аудиофайл ещё раз" : "Не удалось включить нашид");
-  }
+    $("#volumePopover").classList.add("is-open");
+  } catch { if (!quiet) showToast("Нажмите ещё раз, чтобы включить нашид"); }
 }
 
 function pauseAudio() {
@@ -292,10 +437,9 @@ function pauseAudio() {
   isPlaying = false;
   $("#soundButton").classList.remove("is-playing");
   $("#soundButton").setAttribute("aria-pressed", "false");
-  $("#soundButton").setAttribute("aria-label", "Включить музыку");
 }
 
-async function selectTrack(index, shouldPlay = isPlaying) {
+async function selectTrack(index, resume = isPlaying) {
   selectedTrack = index;
   localStorage.setItem("warmLetterTrack", String(index));
   $$(".track-option").forEach(option => option.classList.toggle("is-active", Number(option.dataset.track) === index || (index === 3 && option.id === "customTrackButton")));
@@ -304,12 +448,9 @@ async function selectTrack(index, shouldPlay = isPlaying) {
   audio.load();
   try {
     await setAudioSource(index);
-    if (shouldPlay) await playAudio();
-    const name = index === 3 ? $("#customTrackName").textContent : tracks[index].name;
-    showToast(`Выбрано: ${name}`);
-  } catch (error) {
-    showToast(error.message);
-  }
+    if (resume) await playAudio();
+    showToast(`Выбрано: ${index === 3 ? $("#customTrackName").textContent : tracks[index].name}`);
+  } catch (error) { showToast(error.message); }
 }
 
 function openAudioDb() {
@@ -344,88 +485,80 @@ async function loadCustomAudio() {
     if (saved?.blob) {
       customAudioBlob = saved.blob;
       $("#customTrackName").textContent = saved.name;
-      if (selectedTrack === 3) $$(".track-option").forEach(option => option.classList.toggle("is-active", option.id === "customTrackButton"));
-    } else if (selectedTrack === 3) {
-      selectedTrack = 0;
-      localStorage.setItem("warmLetterTrack", "0");
-    }
-  } catch {
-    if (selectedTrack === 3) selectedTrack = 0;
-  }
+    } else if (selectedTrack === 3) selectedTrack = 0;
+  } catch { if (selectedTrack === 3) selectedTrack = 0; }
+  $$(".track-option").forEach(option => option.classList.toggle("is-active", Number(option.dataset.track) === selectedTrack || (selectedTrack === 3 && option.id === "customTrackButton")));
 }
 
 async function shareLetter() {
   updateUrl();
-  const data = {
-    title: `Письмо: ${toName}`,
-    text: `${toName}, это маленькое письмо для тебя — от ${fromName} ♡`,
-    url: location.href
-  };
+  const data = { title: `Письмо: ${toName}`, text: `${toName}, это письмо для тебя — от ${fromName} ♡`, url: location.href };
   try {
-    if (navigator.share && fromName.toLowerCase() === "ислам" && toName.toLowerCase() === "айша") {
-      try {
-        const response = await fetch("assets/share-card.png.b64");
-        const card = new File([base64ToBlob((await response.text()).trim(), "image/png")], "письмо-для-айши.png", { type: "image/png" });
-        if (navigator.canShare?.({ files: [card] })) data.files = [card];
-      } catch {}
-    }
     if (navigator.share) await navigator.share(data);
-    else {
-      await navigator.clipboard.writeText(location.href);
-      showToast("Персональная ссылка скопирована");
-    }
-  } catch (error) {
-    if (error.name !== "AbortError") showToast("Скопируйте ссылку из адресной строки");
-  }
+    else { await navigator.clipboard.writeText(location.href); showToast("Персональная ссылка скопирована"); }
+  } catch (error) { if (error.name !== "AbortError") showToast("Скопируйте ссылку из адресной строки"); }
 }
 
-$("#beginButton").addEventListener("click", beginStory);
-acceptButton.addEventListener("click", openLetter);
-$("#nextButton").addEventListener("click", () => closeLetter(true));
-$("#letterBackdrop").addEventListener("click", () => closeLetter(false));
-$("#personalizeButton").addEventListener("click", showSheet);
-$("#sheetBackdrop").addEventListener("click", closeSheet);
-$("#saveNamesButton").addEventListener("click", () => {
-  setNames($("#fromInput").value, $("#toInput").value);
-  localStorage.setItem("warmLetterGender", recipientGender);
-  closeSheet();
-  changeCaption();
-  showToast("Имена сохранены в этой ссылке ♡");
-});
-$("#shareButton").addEventListener("click", shareLetter);
-$("#soundButton").addEventListener("click", () => isPlaying ? pauseAudio() : playAudio());
-$("#volume").addEventListener("input", event => {
-  audio.volume = Number(event.target.value);
-  localStorage.setItem("warmLetterVolume", event.target.value);
-});
-$$('[data-track]').forEach(button => button.addEventListener("click", () => selectTrack(Number(button.dataset.track))));
-$$('[data-gender]').forEach(button => button.addEventListener("click", () => {
-  recipientGender = button.dataset.gender;
-  $$('[data-gender]').forEach(option => option.classList.toggle("is-active", option.dataset.gender === recipientGender));
-}));
-$("#customTrackButton").addEventListener("click", () => $("#customTrackInput").click());
-$("#customTrackInput").addEventListener("change", async event => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  if (file.size > 35 * 1024 * 1024) return showToast("Выберите файл меньше 35 МБ");
-  customAudioBlob = file;
-  $("#customTrackName").textContent = file.name;
-  try { await saveCustomAudio(file); } catch { showToast("Трек включится сейчас, но телефон может его не запомнить"); }
-  await selectTrack(3, isPlaying);
-});
-
-document.addEventListener("keydown", event => {
-  if (event.key !== "Escape") return;
-  if (letterLayer.classList.contains("is-open")) closeLetter(false);
-  else if (sheetLayer.classList.contains("is-open")) closeSheet();
-});
+function bindEvents() {
+  $("#openStoryButton").addEventListener("click", openStory);
+  $("#nextLetter").addEventListener("click", () => moveLetter(1));
+  $("#previousLetter").addEventListener("click", () => moveLetter(-1));
+  $("#shareButton").addEventListener("click", shareLetter);
+  [$("#aiOpenTop"), $("#aiOpenHome"), $("#aiOpenLetter")].forEach(button => button.addEventListener("click", () => openPanel(aiLayer)));
+  $("#aiClose").addEventListener("click", () => closePanel(aiLayer));
+  $("#aiBackdrop").addEventListener("click", () => closePanel(aiLayer));
+  $("#settingsButton").addEventListener("click", () => openPanel(settingsLayer));
+  $("#settingsClose").addEventListener("click", () => closePanel(settingsLayer));
+  $("#settingsBackdrop").addEventListener("click", () => closePanel(settingsLayer));
+  $("#aiForm").addEventListener("submit", event => { event.preventDefault(); generateLetter(); });
+  $("#regenerateButton").addEventListener("click", generateLetter);
+  $("#useGenerated").addEventListener("click", useGeneratedLetter);
+  $("#copyGenerated").addEventListener("click", async () => {
+    await navigator.clipboard.writeText($("#generatedText").value);
+    showToast("Текст скопирован");
+  });
+  $("#saveSettings").addEventListener("click", () => {
+    setNames($("#fromInput").value, $("#toInput").value);
+    localStorage.setItem("warmLetterGender", recipientGender);
+    closePanel(settingsLayer);
+    if (storyOpened) renderLetter();
+    showToast("Настройки сохранены в ссылке");
+  });
+  $$('[data-gender]').forEach(button => button.addEventListener("click", () => {
+    recipientGender = button.dataset.gender;
+    $$('[data-gender]').forEach(option => option.classList.toggle("is-active", option.dataset.gender === recipientGender));
+  }));
+  $$('[data-track]').forEach(button => button.addEventListener("click", () => selectTrack(Number(button.dataset.track))));
+  $("#customTrackButton").addEventListener("click", () => $("#customTrackInput").click());
+  $("#customTrackInput").addEventListener("change", async event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 35 * 1024 * 1024) return showToast("Выберите файл меньше 35 МБ");
+    customAudioBlob = file;
+    $("#customTrackName").textContent = file.name;
+    try { await saveCustomAudio(file); } catch { showToast("Трек включится сейчас, но может не сохраниться"); }
+    await selectTrack(3, isPlaying);
+  });
+  $("#soundButton").addEventListener("click", () => isPlaying ? pauseAudio() : playAudio());
+  $("#volume").addEventListener("input", event => {
+    audio.volume = Number(event.target.value);
+    localStorage.setItem("warmLetterVolume", event.target.value);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    if (aiLayer.classList.contains("is-open")) closePanel(aiLayer);
+    else if (settingsLayer.classList.contains("is-open")) closePanel(settingsLayer);
+  });
+}
 
 audio.volume = Number(localStorage.getItem("warmLetterVolume") || .62);
 $("#volume").value = String(audio.volume);
 setNames(fromName, toName);
 $$('[data-gender]').forEach(option => option.classList.toggle("is-active", option.dataset.gender === recipientGender));
-makeAtmosphere();
+createAtmosphere();
+setupBackground();
 loadCustomAudio();
+bindEvents();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

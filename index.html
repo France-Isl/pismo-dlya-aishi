@@ -3,196 +3,214 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#d8719f" />
-  <meta name="description" content="Живое письмо, в котором тёплые слова находят дорогу к любимому человеку." />
-  <meta property="og:title" content="Письмо, которое нашло тебя" />
-  <meta property="og:description" content="Маленькая история с большим теплом внутри." />
+  <meta name="theme-color" content="#241d2a" />
+  <meta name="description" content="Уютное живое письмо с безопасным локальным ИИ для тёплых семейных слов." />
+  <meta property="og:title" content="Тёплое письмо" />
+  <meta property="og:description" content="Слова, которые хочется сохранить." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/share-card.png" />
+  <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/campfire-lake.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <title>Письмо для Айши — от Ислама</title>
+  <title>Тёплое письмо</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app" id="app">
-    <div class="sky" aria-hidden="true">
-      <div class="moon"><span></span></div>
-      <div class="stars" id="stars"></div>
-      <div class="cloud cloud-one"></div>
-      <div class="cloud cloud-two"></div>
-      <div class="rain" id="rain"></div>
-      <div class="mountains mountain-back"></div>
-      <div class="mountains mountain-front"></div>
-      <div class="lake"></div>
-      <div class="shore"></div>
-      <div class="fireflies" id="fireflies"></div>
-    </div>
+    <div class="cinematic-bg" id="cinematicBg" aria-hidden="true"></div>
+    <div class="color-wash" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="film-grain" aria-hidden="true"></div>
+    <div class="leaves" id="leaves" aria-hidden="true"></div>
+    <div class="embers" id="embers" aria-hidden="true"></div>
+    <div class="rain-veil" id="rainVeil" aria-hidden="true"></div>
 
     <header class="topbar">
-      <button class="glass-button sound-button" id="soundButton" type="button" aria-label="Включить музыку" aria-pressed="false">
-        <span class="sound-icon" aria-hidden="true">♫</span>
-        <span class="sound-label">Нашид</span>
+      <button class="round-control sound-button" id="soundButton" type="button" aria-label="Включить музыку" aria-pressed="false">
+        <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
-      <div class="volume-wrap" id="volumeWrap">
-        <input id="volume" type="range" min="0" max="1" step="0.05" value="0.62" aria-label="Громкость музыки" />
+      <div class="volume-popover" id="volumePopover">
+        <input id="volume" type="range" min="0" max="1" step="0.05" value="0.62" aria-label="Громкость" />
       </div>
-      <button class="glass-button" id="personalizeButton" type="button" aria-label="Изменить имена">♡ <span id="headerTo">Айша</span> · ✎</button>
+      <div class="topbar-spacer"></div>
+      <button class="text-control" id="aiOpenTop" type="button"><span class="spark">✦</span> Написать с ИИ</button>
+      <button class="round-control" id="settingsButton" type="button" aria-label="Настройки письма">⋯</button>
     </header>
 
     <main>
-      <section class="intro" id="intro" aria-labelledby="introTitle">
-        <div class="intro-orbit" aria-hidden="true">
-          <span class="orbit-dot dot-one">✦</span>
-          <span class="orbit-dot dot-two">♡</span>
-          <span class="orbit-dot dot-three">☾</span>
+      <section class="home-screen" id="homeScreen" aria-label="Начало истории">
+        <div class="home-bottom">
+          <p class="sender-line">от <strong id="homeFrom">Ислама</strong></p>
+          <button class="seal-button" id="openStoryButton" type="button">
+            <span class="seal-mark" aria-hidden="true">♡</span>
+            <span>Открыть письмо</span>
+          </button>
+          <button class="quiet-link" id="aiOpenHome" type="button">или создать свои тёплые слова</button>
+          <p class="sound-hint">Коснитесь экрана — музыка начнётся мягко</p>
         </div>
-        <p class="eyebrow">НЕБОЛЬШОЕ ПУТЕШЕСТВИЕ ДЛЯ СЕРДЦА</p>
-        <h1 id="introTitle">Письмо для тебя,<br /><em id="introTo">Айша</em></h1>
-        <p class="intro-copy">В нём живут звёзды, дождь, тёплый лес и слова, которые <span id="introFrom">Ислам</span> хотел сказать именно тебе.</p>
-        <button class="primary-button" id="beginButton" type="button">
-          <span>Войти в эту историю</span>
-          <i aria-hidden="true">→</i>
-        </button>
-        <p class="sound-note">Лучше открыть со звуком · внутри играет твой нашид</p>
       </section>
 
-      <section class="story" id="story" aria-live="polite" hidden>
-        <div class="caption-wrap">
-          <span class="caption-star">✦</span>
-          <p class="live-caption" id="liveCaption">Пока ты читаешь это, Ислам думает о тебе</p>
+      <section class="letter-stage" id="letterStage" hidden aria-live="polite">
+        <div class="stage-caption">
+          <span class="caption-line"></span>
+          <p id="stageCaption">Вечер сохранил эти слова для тебя</p>
+          <span class="caption-line"></span>
         </div>
 
-        <div class="scene-card" id="sceneCard">
-          <div class="scene-label">
-            <span id="sceneIcon">☾</span>
-            <p id="sceneName">Лунное озеро</p>
-          </div>
+        <article class="letter" id="letter" aria-labelledby="letterTitle">
+          <div class="paper-edge" aria-hidden="true"></div>
+          <header class="letter-meta">
+            <span>для <strong id="letterTo">Айша</strong></span>
+            <span id="letterNumber">01 / 24</span>
+          </header>
+          <h1 id="letterTitle">Несколько слов для тебя</h1>
+          <p class="letter-text" id="letterText"></p>
+          <footer class="signature">
+            <span>С теплом,</span>
+            <strong id="letterFrom">Ислам</strong>
+          </footer>
+        </article>
 
-          <div class="animal courier animal-cat" id="courier" aria-label="Маленький розовый котёнок несёт письмо">
-            <div class="tail"></div>
-            <div class="body"><span class="belly"></span></div>
-            <div class="leg leg-left"></div>
-            <div class="leg leg-right"></div>
-            <div class="arm arm-back"></div>
-            <div class="arm arm-offer"><span class="mini-envelope"><i>♥</i></span></div>
-            <div class="head">
-              <span class="ear ear-left"></span>
-              <span class="ear ear-right"></span>
-              <span class="face-mark"></span>
-              <span class="eye eye-left"></span>
-              <span class="eye eye-right"></span>
-              <span class="nose"></span>
-              <span class="cheek cheek-left"></span>
-              <span class="cheek cheek-right"></span>
-              <span class="bow"><i></i></span>
-            </div>
-          </div>
-
-          <div class="animal recipient animal-bear" id="recipient" aria-label="Маленький медвежонок ждёт письмо">
-            <div class="tail"></div>
-            <div class="body"><span class="belly"></span></div>
-            <div class="leg leg-left"></div>
-            <div class="leg leg-right"></div>
-            <div class="arm arm-back"></div>
-            <div class="arm arm-offer"></div>
-            <div class="head">
-              <span class="ear ear-left"></span>
-              <span class="ear ear-right"></span>
-              <span class="face-mark"></span>
-              <span class="eye eye-left"></span>
-              <span class="eye eye-right"></span>
-              <span class="nose"></span>
-              <span class="cheek cheek-left"></span>
-              <span class="cheek cheek-right"></span>
-              <span class="bow"><i></i></span>
-            </div>
-          </div>
-
-          <div class="ground-shadow shadow-one"></div>
-          <div class="ground-shadow shadow-two"></div>
-          <div class="reeds reeds-one"></div>
-          <div class="reeds reeds-two"></div>
-          <div class="water-rings"></div>
-        </div>
-
-        <div class="delivery-panel" id="deliveryPanel">
-          <p class="delivery-kicker" id="deliveryKicker">Письмо уже близко…</p>
-          <h2 id="deliveryTitle">Маленький друг несёт его к тебе</h2>
-          <button class="primary-button accept-button" id="acceptButton" type="button" disabled>
-            <span>Подождать ещё мгновение</span>
-            <i aria-hidden="true">♡</i>
-          </button>
-        </div>
-
-        <div class="progress-row" aria-label="Прогресс писем">
-          <span id="letterCount">Письмо 1 из 24</span>
-          <div class="progress-track"><i id="progressBar"></i></div>
-        </div>
+        <nav class="letter-actions" aria-label="Действия с письмом">
+          <button class="glass-action" id="previousLetter" type="button" aria-label="Предыдущее письмо">←</button>
+          <button class="main-action" id="nextLetter" type="button">Следующее письмо <span>→</span></button>
+          <button class="glass-action" id="shareButton" type="button" aria-label="Поделиться письмом">↗</button>
+        </nav>
+        <button class="ai-inline" id="aiOpenLetter" type="button"><span>✦</span> Создать новое письмо с ИИ</button>
       </section>
     </main>
 
-    <div class="letter-layer" id="letterLayer" aria-hidden="true">
-      <button class="letter-backdrop" id="letterBackdrop" type="button" aria-label="Закрыть письмо"></button>
-      <article class="letter-card" role="dialog" aria-modal="true" aria-labelledby="letterHeading">
-        <div class="envelope-shell" aria-hidden="true">
-          <div class="envelope-back"></div>
-          <div class="envelope-flap"></div>
-          <div class="wax-seal">♥</div>
+    <div class="panel-layer" id="aiLayer" aria-hidden="true">
+      <button class="panel-backdrop" id="aiBackdrop" type="button" aria-label="Закрыть генератор"></button>
+      <section class="side-panel ai-panel" role="dialog" aria-modal="true" aria-labelledby="aiTitle">
+        <header class="panel-header">
+          <div>
+            <p class="panel-eyebrow">ЛОКАЛЬНЫЙ ИИ · БЕСПЛАТНО</p>
+            <h2 id="aiTitle">Тёплые слова</h2>
+          </div>
+          <button class="panel-close" id="aiClose" type="button" aria-label="Закрыть">×</button>
+        </header>
+
+        <div class="adab-banner">
+          <span class="adab-icon">✓</span>
+          <div><strong>Режим адаба включён</strong><small>Запрос и ответ проходят двойную проверку. Темы 18+ строго блокируются.</small></div>
         </div>
-        <div class="paper">
-          <div class="paper-topline">
-            <span>получатель: <strong id="paperTo">Айша</strong></span>
-            <span id="paperNumber">01 / 24</span>
+
+        <form id="aiForm">
+          <div class="form-grid">
+            <label><span>Кому</span><input id="aiRecipientName" maxlength="28" value="Айша" /></label>
+            <label><span>Кто этот человек</span>
+              <select id="aiRelationship">
+                <option value="mother">мама</option>
+                <option value="father">папа</option>
+                <option value="wife">жена</option>
+                <option value="husband">муж</option>
+                <option value="daughter">дочь</option>
+                <option value="son">сын</option>
+                <option value="grandmother">бабушка</option>
+                <option value="grandfather">дедушка</option>
+                <option value="sister">сестра</option>
+                <option value="brother">брат</option>
+                <option value="relative">родной человек</option>
+                <option value="teacher">учитель</option>
+              </select>
+            </label>
+            <label><span>От кого</span><input id="aiSenderName" maxlength="28" value="Ислам" /></label>
+            <label><span>Я пишу как</span>
+              <select id="aiSenderRole">
+                <option value="son">сын</option>
+                <option value="daughter">дочь</option>
+                <option value="husband">муж</option>
+                <option value="wife">жена</option>
+                <option value="parent">родитель</option>
+                <option value="sibling">брат или сестра</option>
+                <option value="relative">родственник</option>
+                <option value="student">ученик</option>
+              </select>
+            </label>
+            <label><span>Настроение</span>
+              <select id="aiTone">
+                <option value="grateful">благодарное</option>
+                <option value="warm">тёплое и спокойное</option>
+                <option value="supportive">поддерживающее</option>
+                <option value="apology">искреннее извинение</option>
+                <option value="celebration">к важному дню</option>
+                <option value="dua">с добрым пожеланием и дуа</option>
+              </select>
+            </label>
+            <label><span>Длина</span>
+              <select id="aiLength">
+                <option value="short">короткое</option>
+                <option value="medium" selected>среднее</option>
+                <option value="long">подробное</option>
+              </select>
+            </label>
           </div>
-          <h2 id="letterHeading">Тёплые слова для тебя</h2>
-          <p class="letter-message" id="letterMessage"></p>
-          <div class="signature">
-            <span>С теплом,</span>
-            <strong id="paperFrom">Ислам</strong>
+          <label class="wide-label"><span>Что вы хотите сказать?</span><textarea id="aiIdea" rows="4" maxlength="600" placeholder="Например: поблагодари маму за её терпение, заботу и поддержку. Скажи, что я ценю её дуа и хочу чаще радовать её."></textarea></label>
+
+          <div class="model-note">
+            <span>◆</span>
+            <p><strong>Текст остаётся на вашем устройстве.</strong> При первом запуске загрузится небольшая языковая модель — лучше использовать Wi‑Fi.</p>
           </div>
-          <div class="letter-actions">
-            <button class="secondary-button" id="shareButton" type="button">Поделиться ссылкой</button>
-            <button class="primary-button next-button" id="nextButton" type="button"><span>Следующее письмо</span><i>→</i></button>
+
+          <button class="generate-button" id="generateButton" type="submit"><span class="generate-spark">✦</span><span class="generate-label">Сгенерировать письмо</span><i>→</i></button>
+        </form>
+
+        <div class="generation-status" id="generationStatus" hidden>
+          <div class="status-row"><span id="statusText">Подготавливаю локальный ИИ…</span><strong id="statusPercent">0%</strong></div>
+          <div class="status-track"><i id="statusBar"></i></div>
+        </div>
+
+        <div class="safety-message" id="safetyMessage" hidden>
+          <strong>Этот запрос нельзя использовать</strong>
+          <p id="safetyReason">Попробуйте написать о благодарности, семье, поддержке, уважении или добром пожелании.</p>
+        </div>
+
+        <div class="generated-card" id="generatedCard" hidden>
+          <div class="generated-top"><span>ГОТОВОЕ ПИСЬМО</span><button id="regenerateButton" type="button">↻ Ещё вариант</button></div>
+          <textarea id="generatedText" rows="10" aria-label="Сгенерированное письмо"></textarea>
+          <div class="generated-actions">
+            <button class="copy-button" id="copyGenerated" type="button">Копировать</button>
+            <button class="use-button" id="useGenerated" type="button">Добавить в письмо <span>→</span></button>
           </div>
         </div>
-      </article>
+
+        <p class="religious-note">Фильтр помогает соблюдать скромность и уважение, но не является религиозным заключением. Перед отправкой перечитайте текст.</p>
+      </section>
     </div>
 
-    <div class="sheet-layer" id="sheetLayer" aria-hidden="true">
-      <button class="sheet-backdrop" id="sheetBackdrop" type="button" aria-label="Закрыть настройки"></button>
-      <section class="personalize-sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-        <div class="sheet-handle"></div>
-        <p class="eyebrow">СДЕЛАЙ ПИСЬМО СВОИМ</p>
-        <h2 id="sheetTitle">Кто отправляет тепло?</h2>
-        <label>От кого<input id="fromInput" maxlength="28" autocomplete="name" value="Ислам" /></label>
-        <label>Для кого<input id="toInput" maxlength="28" autocomplete="off" value="Айша" /></label>
+    <div class="panel-layer" id="settingsLayer" aria-hidden="true">
+      <button class="panel-backdrop" id="settingsBackdrop" type="button" aria-label="Закрыть настройки"></button>
+      <section class="side-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <header class="panel-header">
+          <div><p class="panel-eyebrow">ВАШЕ ПИСЬМО</p><h2 id="settingsTitle">Настройки</h2></div>
+          <button class="panel-close" id="settingsClose" type="button" aria-label="Закрыть">×</button>
+        </header>
+        <label class="wide-label"><span>От кого</span><input id="fromInput" maxlength="28" value="Ислам" /></label>
+        <label class="wide-label"><span>Для кого</span><input id="toInput" maxlength="28" value="Айша" /></label>
         <fieldset class="gender-picker">
           <legend>Обращение</legend>
-          <button class="gender-option is-active" type="button" data-gender="f">к девушке</button>
-          <button class="gender-option" type="button" data-gender="m">к парню</button>
+          <button class="choice-pill is-active" type="button" data-gender="f">к девушке</button>
+          <button class="choice-pill" type="button" data-gender="m">к мужчине</button>
         </fieldset>
         <fieldset class="track-picker">
-          <legend>Музыка письма</legend>
+          <legend>Нашид</legend>
           <button class="track-option is-active" type="button" data-track="0"><i>01</i><span><strong>Мураджан · slowed</strong><small>основная мелодия</small></span><b>✓</b></button>
-          <button class="track-option" type="button" data-track="1"><i>02</i><span><strong>Азан · nasheed</strong><small>мягкая и светлая</small></span><b>✓</b></button>
+          <button class="track-option" type="button" data-track="1"><i>02</i><span><strong>Азан · nasheed</strong><small>светлая версия</small></span><b>✓</b></button>
           <button class="track-option" type="button" data-track="2"><i>03</i><span><strong>Лучшие нашиды</strong><small>тёплая версия</small></span><b>✓</b></button>
-          <button class="track-option custom-track" id="customTrackButton" type="button"><i>＋</i><span><strong>Выбрать свой нашид</strong><small id="customTrackName">MP3 или другой аудиофайл с телефона</small></span><b>✓</b></button>
+          <button class="track-option custom-track" id="customTrackButton" type="button"><i>＋</i><span><strong>Выбрать свой нашид</strong><small id="customTrackName">аудиофайл с телефона</small></span><b>✓</b></button>
           <input class="visually-hidden" id="customTrackInput" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav" />
         </fieldset>
-        <p class="sheet-hint">Имена сохранятся прямо в ссылке — её можно отправить другому человеку.</p>
-        <button class="primary-button" id="saveNamesButton" type="button"><span>Сохранить и продолжить</span><i>♡</i></button>
+        <button class="save-settings" id="saveSettings" type="button">Сохранить изменения</button>
       </section>
     </div>
 
     <div class="toast" id="toast" role="status"></div>
     <audio id="nasheed" loop preload="none"></audio>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>

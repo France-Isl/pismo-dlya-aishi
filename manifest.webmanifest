@@ -1,14 +1,14 @@
 {
-  "name": "Письмо, которое нашло тебя",
-  "short_name": "Тёплое письмо",
-  "description": "Живое романтическое письмо с уютной историей.",
+  "name": "Тёплое письмо",
+  "short_name": "Письмо",
+  "description": "Уютное письмо с безопасным локальным ИИ для семейных слов.",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f8dbe8",
-  "theme_color": "#d8719f",
+  "background_color": "#171722",
+  "theme_color": "#241d2a",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
