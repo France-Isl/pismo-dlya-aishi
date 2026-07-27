@@ -45,7 +45,7 @@ final class BillingManager implements PurchasesUpdatedListener {
         void onResult(ProductDetails details, ProductDetails.OneTimePurchaseOfferDetails offer, String error);
     }
 
-    private static final String DEFAULT_PRICE = "€4.99";
+    private static final String DEFAULT_PRICE = "€7.99";
     private static final String DEBUG_PREFS = "nur_billing_debug_only";
     private static final String DEBUG_MOCK_KEY = "mock_full_access";
 
@@ -421,7 +421,7 @@ final class BillingManager implements PurchasesUpdatedListener {
                     .put("mock", state.mock)
                     .toString();
         } catch (Exception ignored) {
-            return "{\"entitled\":false,\"priceLabel\":\"€4.99\",\"reason\":\"serialization_error\"}";
+            return "{\"entitled\":false,\"priceLabel\":\"€7.99\",\"reason\":\"serialization_error\"}";
         }
     }
 

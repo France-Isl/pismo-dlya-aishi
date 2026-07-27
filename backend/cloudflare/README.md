@@ -54,7 +54,7 @@ npx wrangler secret put ENTITLEMENT_HASH_SECRET
 
 1. Создайте/выберите Google Cloud project и включите **Google Play Android Developer API** и **Play Integrity API**.
 2. Свяжите Cloud project с Play Console. Service account выдайте только права, необходимые для чтения покупок и acknowledgement.
-3. В Play Console создайте активный одноразовый **нерасходуемый** товар с точным ID `full_access` и задайте цену €4.99.
+3. В Play Console создайте активный одноразовый **нерасходуемый** товар с точным ID `full_access` и задайте цену €7.99.
 4. Включите Play App Signing, Automatic Protection и Play Integrity.
 5. Банковский счёт задаётся только в закрытом Google Payments profile в Play Console; в Worker и репозитории он не нужен.
 

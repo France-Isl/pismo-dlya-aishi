@@ -12,12 +12,12 @@
   <meta property="og:image" content="https://france-isl.github.io/pismo-dlya-aishi/assets/campfire-lake.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <title>GlowLetter · Тёплые слова</title>
-  <link rel="manifest" href="manifest.webmanifest?v=6" />
+  <link rel="manifest" href="manifest.webmanifest?v=7" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <div class="app" id="app">
@@ -62,7 +62,7 @@
             <button class="smart-link" id="aiOpenHome" type="button"><span>✦</span> Создать своё письмо <b>PRO</b></button>
             <button class="smart-link" id="replyOpenHome" type="button"><span>↗</span> Помочь с ответом <b>PRO</b></button>
           </div>
-          <p class="free-note"><span>10 писем бесплатно</span><i></i><span>полная коллекция — 4,99 €</span></p>
+          <p class="free-note"><span>10 писем бесплатно</span><i></i><span>полная коллекция — 7,99 €</span></p>
         </div>
       </section>
 
@@ -270,11 +270,13 @@
           <input class="visually-hidden" id="customTrackInput" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav" />
         </fieldset>
 
+        <button class="save-settings" id="saveSettingsButton" type="button">Сохранить настройки</button>
+
         <div class="premium-settings-card">
           <span class="premium-mini">ПОЛНАЯ ВЕРСИЯ</span>
           <h3>Откройте полный GlowLetter</h3>
           <p>Все 50 писем, ИИ‑редактор, помощник ответов и будущие функции — одной покупкой.</p>
-          <button id="settingsPurchase" type="button">Открыть за <span class="price-label">4,99 €</span></button>
+          <button id="settingsPurchase" type="button">Открыть за <span class="price-label">7,99 €</span></button>
         </div>
 
         <button class="install-button" id="installButton" type="button" hidden>＋ Установить GlowLetter</button>
@@ -291,7 +293,7 @@
         <h2 id="paywallTitle">Ещё 40 писем<br /><em>для важных людей</em></h2>
         <p>Первые 10 писем остаются бесплатными. Полная коллекция, ИИ‑редактор, помощник ответов и будущие функции открываются навсегда.</p>
         <ul><li>все 50 персональных писем</li><li>ИИ‑письма с выбором стиля</li><li>помощник ответов</li><li>восстановление покупки</li></ul>
-        <button class="purchase-button" id="purchaseButton" type="button"><span>Открыть полный доступ</span><strong class="price-label">4,99 €</strong></button>
+        <button class="purchase-button" id="purchaseButton" type="button"><span>Открыть полный доступ</span><strong class="price-label">7,99 €</strong></button>
         <button class="restore-button" id="restoreButton" type="button">Восстановить покупку</button>
         <button class="paywall-home go-home" type="button">⌂ На главную</button>
         <small>Оплата проходит через магазин. Цена может отображаться в местной валюте.</small>
@@ -301,8 +303,8 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <audio id="nasheed" loop preload="none"></audio>
   </div>
-  <script src="config.js?v=6"></script>
-  <script src="letters.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="config.js?v=7"></script>
+  <script src="letters.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

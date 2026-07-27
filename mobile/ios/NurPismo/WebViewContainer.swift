@@ -64,7 +64,7 @@ struct WebViewContainer: UIViewRepresentable {
 
         static let billingBootstrap = """
         (function () {
-          const state = { entitled: false, priceLabel: '€4.99', reason: 'storekit2_not_configured', productId: 'full_access', freeLetterLimit: 10, purchaseConfigured: false, mock: false };
+          const state = { entitled: false, priceLabel: '€7.99', reason: 'storekit2_not_configured', productId: 'full_access', freeLetterLimit: 10, purchaseConfigured: false, mock: false };
           window.NurBilling = Object.freeze({
             getEntitlement: function () { return JSON.stringify(state); },
             purchaseFullAccess: function () { window.webkit.messageHandlers.nurBilling.postMessage({ action: 'purchaseFullAccess' }); },
@@ -110,7 +110,7 @@ struct WebViewContainer: UIViewRepresentable {
         private func sendUnavailable(reason: String) {
             guard let webView else { return }
             let encodedReason = Self.jsonString(reason)
-            let script = "if(typeof window.onNativeEntitlement==='function'){window.onNativeEntitlement(false,'€4.99',\(encodedReason));}"
+            let script = "if(typeof window.onNativeEntitlement==='function'){window.onNativeEntitlement(false,'€7.99',\(encodedReason));}"
             webView.evaluateJavaScript(script)
         }
 
